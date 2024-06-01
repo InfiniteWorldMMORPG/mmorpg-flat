@@ -1,6 +1,24 @@
 <script setup lang="ts">
+import type { GlobalLocation } from '../stores/@types';
+import { isNearbyLocation, useGameStore } from '../stores';
+
 import AvatarIcon from '../common/components/AvatarIcon.vue';
 
+const gameStore = useGameStore();
+
+gameStore.init();
+
+setInterval(() => {
+  if (gameStore.playerCreature !== null) {
+    gameStore.playerCreature.currentStats.healthPoints += Number(Math.random() < 0.5) * 2 - 1;
+  }
+}, 5000);
+
+const changeGlobalLocation = (location: GlobalLocation): void => {
+  if (gameStore.playerCreature !== null) {
+    gameStore.moveCreatureToGlobalLocation(gameStore.playerCreature, location);
+  }
+};
 
 </script>
 
@@ -11,19 +29,25 @@ import AvatarIcon from '../common/components/AvatarIcon.vue';
         <div class="user-avatar">
           <AvatarIcon />
         </div>
-        <div class="user-name" title="My Super NickName">My Super NickName</div>
-        <div class="user-level">Level: 1</div>
+        <div class="user-name" :title="gameStore.playerCreature?.name">{{ gameStore.playerCreature?.name }}</div>
+        <div class="user-level">Level: {{ gameStore.playerCreature?.level }}</div>
         <div class="user-expirience bar">
           <div class="key">Exp:</div>
-          <div class="value">0 / 5</div>
+          <div class="value">
+            {{ gameStore.playerCreature?.currentStats.exp }} / {{ gameStore.playerCreature?.maxStats.exp }}
+          </div>
         </div>
         <div class="user-health-points bar">
           <div class="key">HP:</div>
-          <div class="value">10 / 10</div>
+          <div class="value">
+            {{ gameStore.playerCreature?.currentStats.healthPoints}} / {{gameStore.playerCreature?.maxStats.healthPoints }}
+          </div>
         </div>
         <div class="user-move-points bar">
           <div class="key">Move points:</div>
-          <div class="value">5 / 5</div>
+          <div class="value">
+            {{ gameStore.playerCreature?.currentStats.movePoints }} / {{ gameStore.playerCreature?.maxStats.movePoints }}
+          </div>
         </div>
       </div>
       <div class="user-stats spoiler">
@@ -31,8 +55,8 @@ import AvatarIcon from '../common/components/AvatarIcon.vue';
           <span class="spoiler-toggle-btn">Stats</span>
           <div class="spoiler-toggle-btn">^</div>
         </div>
-        <div class="user-stats-attack">Attack: 1</div>
-        <div class="user-stats-armor">Armor: 0</div>
+        <div class="user-stats-attack">Attack: {{ gameStore.playerCreature?.currentStats.attack }}</div>
+        <div class="user-stats-armor">Armor: {{ gameStore.playerCreature?.currentStats.armor }}</div>
       </div>
     </div>
     <div class="location"></div>
@@ -42,35 +66,14 @@ import AvatarIcon from '../common/components/AvatarIcon.vue';
         <div class="creatures-list-item">User</div>
       </div>
       <div class="minimap">
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell">X</div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
-        <div class="minimap-location-cell"></div>
+        <div v-for="location in gameStore.minimapLocations" :key="location.id" :class="{
+            'minimap-location-cell': true,
+            'minimap-location-cell-impassable': !location.canMove,
+            'minimap-location-cell-can-move': location.canMove && isNearbyLocation(gameStore.playerLocation, location, 1),
+          }"
+          @click="changeGlobalLocation(location)">
+          <span v-if="location.id === gameStore.playerCreature?.locationId">X</span>
+        </div>
       </div>
     </div>
     <div class="bottombar">
@@ -213,11 +216,23 @@ import AvatarIcon from '../common/components/AvatarIcon.vue';
 }
 
 .minimap-location-cell {
-  border: 1px solid black;
+  border: 1px solid hsl(0deg 0% 0% / 100%);
+  background: hsl(0deg 0% 100% / 40%);
+  cursor: default;
   box-sizing: border-box;
 
   display: grid;
   place-items: center;
+  user-select: none;
+}
+
+.minimap-location-cell-impassable {
+  background-color: hsl(0deg 0% 0% / 100%);
+  cursor: no-drop;
+}
+
+.minimap-location-cell-can-move {
+  cursor: pointer;
 }
 
 .bottombar {
