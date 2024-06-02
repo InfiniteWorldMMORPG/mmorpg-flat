@@ -11,13 +11,13 @@
 
     "baseUrl": ".",
     "paths": {
-      "#/*": ["./src/*"],
       "#modules": [
         "./src/modules"
       ],
       "#modules/*": [
         "./src/modules/*"
-      ]
+      ],
+      "#/*": ["./src/*"]
     }
   }
 }
