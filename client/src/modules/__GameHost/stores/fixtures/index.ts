@@ -81,6 +81,14 @@ export const skills: Record<Skill['id'], Skill> = {
     cooldown: 0,
     type: SkillType.MOVE,
   },
+  [createUUIDv4()]: {
+    id: '',
+    slug: 'GlobalAttack',
+    name: 'Напасть',
+    description: '',
+    cooldown: 0,
+    type: SkillType.ATTACK,
+  },
 };
 
 for (const [id, value] of Object.entries(skills)) value.id = id;

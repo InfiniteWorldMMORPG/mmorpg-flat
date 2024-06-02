@@ -1,10 +1,10 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 
-import type { Creature, GlobalLocation, GlobalMap, PlayerCreature } from './@types';
+import type { Creature, GlobalIntention, GlobalLocation, GlobalMap, PlayerCreature } from './@types';
 import { useAuthStore } from './auth';
 
-import { globalMap as globalMapFixture, creatures, globalMapCenterLocation } from './fixtures';
+import { globalMap as globalMapFixture, creatures, globalMapCenterLocation, skills } from './fixtures';
 import { isNullOrUndefined } from '../utils';
 
 export class NotAdjacentLocationError extends Error { constructor() { super('Not adjacent locations'); } }
@@ -15,6 +15,8 @@ export const isNearbyLocation = (a: GlobalLocation, b: GlobalLocation, distance:
 
 export const useGameStore = defineStore('game', () => {
   const authStore = useAuthStore();
+
+  const allCreatures = ref(creatures);
 
   const playerCreature = ref<PlayerCreature | null>(null);
   function loadPlayerProfileMap() {
@@ -38,6 +40,19 @@ export const useGameStore = defineStore('game', () => {
     await Promise.resolve();
     loadPlayerProfileMap();
     loadGlobalMap();
+    gameTick();
+  };
+
+  const regenerateMovePoints = (creature: Creature): void => {
+    const movePoints = creature.currentStats.movePoints + creature.currentStats.movePointsRegeneration;
+    if (movePoints <= creature.maxStats.movePoints) creature.currentStats.movePoints = movePoints;
+  };
+
+  const gameTick = () => {
+    for (const creature of Object.values(creatures)) {
+      regenerateMovePoints(creature);
+    }
+    setTimeout(gameTick, 1000);
   };
 
   const playerLocation = computed((): GlobalLocation => {
@@ -48,6 +63,7 @@ export const useGameStore = defineStore('game', () => {
 
   const moveCreatureToGlobalLocation = (creature: Creature, location: GlobalLocation): void | NotAdjacentLocationError => {
     if (!location.canMove) return;
+    if (location.moveCost > creature.currentStats.movePoints) return;
 
     const prevLocation = globalMap.value?.locations.find((location) => location.id === creature.locationId) ?? null;
 
@@ -58,6 +74,7 @@ export const useGameStore = defineStore('game', () => {
 
     location.creatures.push(creature);
     creature.locationId = location.id;
+    creature.currentStats.movePoints -= location.moveCost;
   };
 
   const getMinimapLocations = (location: GlobalLocation): GlobalLocation[] | Error => {
@@ -90,14 +107,37 @@ export const useGameStore = defineStore('game', () => {
     return minimapLocations;
   });
 
+  const runGlobalIntention = (intention: GlobalIntention): void => {
+    const sourceCreature = allCreatures.value[intention.sourceCreatureId] ?? null;
+    if (sourceCreature === null) return;
+    const skill = skills[intention.skillId] ?? null;
+    if (skill === null) return;
+
+
+    const targetLocation = globalMap.value?.locations.find((location) => location.id === intention.targetLocationId) ?? null;
+    const targetCreature = allCreatures.value[intention.targetCreatureId ?? ''] ?? null;
+
+    switch (skill.slug) {
+      case 'GlobalMove': {
+        console.log(123, targetLocation);
+        if (targetLocation === null) return;
+        moveCreatureToGlobalLocation(sourceCreature, targetLocation);
+        break;
+      }
+      default: {
+        console.warn('Unknown global intention', intention);
+        break;
+      }
+    }
+
+  };
+
   return {
     globalMap,
     playerCreature,
     minimapLocations,
     playerLocation,
     init,
-    loadPlayerProfileMap,
-    loadGlobalMap,
-    moveCreatureToGlobalLocation,
+    runGlobalIntention,
   };
 });

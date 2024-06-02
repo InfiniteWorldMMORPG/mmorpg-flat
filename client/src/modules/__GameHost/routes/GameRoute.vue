@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import type { GlobalLocation } from '../stores/@types';
+import { IntentionType, type GlobalIntention, type GlobalLocation } from '../stores/@types';
 import { isNearbyLocation, useGameStore } from '../stores';
 
 import AvatarIcon from '../common/components/AvatarIcon.vue';
+import { createUUIDv4, isNullOrUndefined } from '../utils';
+import { skills } from '../stores/fixtures';
 
 const gameStore = useGameStore();
 
@@ -14,10 +16,22 @@ setInterval(() => {
   }
 }, 5000);
 
-const changeGlobalLocation = (location: GlobalLocation): void => {
-  if (gameStore.playerCreature !== null) {
-    gameStore.moveCreatureToGlobalLocation(gameStore.playerCreature, location);
-  }
+const playerChangeGlobalLocation = (location: GlobalLocation): void => {
+  const skill = Object.values(skills).find(skill => skill.slug === 'GlobalMove');
+  if (isNullOrUndefined(skill)) return;
+
+  if (isNullOrUndefined(gameStore.playerCreature)) return;
+
+  const intention: GlobalIntention = {
+    id: createUUIDv4(),
+    sourceCreatureId: gameStore.playerCreature.id,
+    targetCreatureId: null,
+    targetLocationId: location.id,
+    type: IntentionType.TARGET_TO_LOCATION,
+    skillId: skill.id,
+  };
+
+  gameStore.runGlobalIntention(intention);
 };
 
 </script>
@@ -71,7 +85,7 @@ const changeGlobalLocation = (location: GlobalLocation): void => {
             'minimap-location-cell-impassable': !location.canMove,
             'minimap-location-cell-can-move': location.canMove && isNearbyLocation(gameStore.playerLocation, location, 1),
           }"
-          @click="changeGlobalLocation(location)">
+          @click="playerChangeGlobalLocation(location)">
           <span v-if="location.id === gameStore.playerCreature?.locationId">X</span>
         </div>
       </div>
