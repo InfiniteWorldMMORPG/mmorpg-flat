@@ -3,8 +3,8 @@ import { IntentionType, type GlobalIntention, type GlobalLocation } from '../sto
 import { isNearbyLocation, useGameStore } from '../stores';
 
 import AvatarIcon from '../common/components/AvatarIcon.vue';
-import { createUUIDv4, isNullOrUndefined } from '../utils';
-import { skills } from '../stores/fixtures';
+import { createUUIDv4, isNullOrUndefined } from '../../Common/utils';
+import { skills } from '../api/fixtures';
 
 const gameStore = useGameStore();
 
@@ -80,19 +80,26 @@ const playerChangeGlobalLocation = (location: GlobalLocation): void => {
         <div class="creatures-list-item">User</div>
       </div>
       <div class="minimap">
-        <div v-for="location in gameStore.minimapLocations" :key="location.id" :class="{
+        <div
+          v-for="location in gameStore.minimapLocations"
+          :key="location.id"
+          :class="{
             'minimap-location-cell': true,
             'minimap-location-cell-impassable': !location.canMove,
             'minimap-location-cell-can-move': location.canMove && isNearbyLocation(gameStore.playerLocation, location, 1),
           }"
-          @click="playerChangeGlobalLocation(location)">
+          @click="playerChangeGlobalLocation(location)"
+        >
           <span v-if="location.id === gameStore.playerCreature?.locationId">X</span>
         </div>
       </div>
     </div>
     <div class="bottombar">
       <div class="skill-bar">
-        <div class="skill-bar-cell"></div>
+        <div
+          v-for="location in gameStore.minimapLocations"
+          class="skill-bar-cell"
+        ></div>
         <div class="skill-bar-cell"></div>
         <div class="skill-bar-cell"></div>
         <div class="skill-bar-cell"></div>

@@ -1,12 +1,12 @@
-import { isNullOrUndefined } from '../../utils';
-import { createUUIDv4 } from '../../utils/uuid';
+import { isNullOrUndefined } from '../../../Common/utils';
+import { createUUIDv4 } from '../../../Common/utils/uuid';
 import {
   type BattleMapTemplate, type Creature, type CreatureSpawner,
   type CreatureSpawnerTemplate, type CreatureTemplate,
   type GlobalLocation, type GlobalMap, type Skill,
   SkillType,
   type Battle,
-} from '../@types';
+} from '../../stores/@types';
 
 export const battleMapTemplates: Record<BattleMapTemplate['id'], BattleMapTemplate> = {
   '1': {
