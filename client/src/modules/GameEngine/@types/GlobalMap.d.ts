@@ -1,33 +1,31 @@
-import type { UUIDv4 } from '#/modules/Common/utils/uuid';
-import type { Vector2 } from '#modules/__GameHost/@types/Vector';
-
-import type { BattleMapTemplate } from './BattleMapTemplate';
-import type { Creature, CreatureSpawner } from './Creature';
-import type { Skill } from './Skill';
-import type { IntentionType } from './IntentionType';
+import type { UUIDv4 } from '#modules/Common';
 
 export interface GlobalMap {
   id: UUIDv4;
-  size: Vector2;
-  locations: GlobalLocation[];
+  sizeX: number;
+  sizeY: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface GlobalLocation {
   id: UUIDv4;
-  coordinates: Vector2;
-  mapId: GlobalMap['id'];
-  battleMapTemplateId: BattleMapTemplate['id'];
-  creatures: Creature[];
-  spawners: CreatureSpawner[];
+  coordinateX: number;
+  coordinateY: number;
+  mapId: UUIDv4;
+  battleMapTemplateId: UUIDv4;
   moveCost: number;
   canMove: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface GlobalIntention {
   id: UUIDv4;
-  sourceCreatureId: Creature['id'];
-  targetCreatureId: Creature['id'] | null;
-  targetLocationId: GlobalLocation['id'] | null;
-  type: IntentionType;
-  skillId: Skill['id'];
+  sourceCreatureId: UUIDv4;
+  targetCreatureId: UUIDv4 | null;
+  targetGlobalLocationId: UUIDv4 | null;
+  skillId: UUIDv4;
+  createdAt: Date;
+  updatedAt: Date;
 }

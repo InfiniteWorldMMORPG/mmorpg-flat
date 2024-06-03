@@ -1,5 +1,4 @@
-import type { UUIDv4 } from '#modules/Common/utils/uuid';
-import type { Vector2 } from '#modules/__GameHost/@types/Vector';
+import type { UUIDv4, Vector2 } from '#modules/Common';
 
 import type { CreatureFlatOutputDTO } from './Creature.dto';
 

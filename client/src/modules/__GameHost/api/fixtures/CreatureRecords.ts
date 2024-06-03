@@ -1,5 +1,8 @@
+import { createUUIDv4, isNullOrUndefined } from '#modules/Common';
 
 import type { CreatureTemplate, CreatureSpawnerTemplate, GlobalLocation, Battle, Creature } from '../../stores/@types';
+import { basePlayerSpawnLocation } from './GlobalMap';
+import { skillMap, standartBattleSkillList } from './SkillRecords';
 
 
 export const creatureTemplates: Record<CreatureTemplate['id'], CreatureTemplate> = {
@@ -17,7 +20,7 @@ export const creatureTemplates: Record<CreatureTemplate['id'], CreatureTemplate>
       movePointsRegeneration: 0,
       actionPoints: 1,
     },
-    skills: standartSkills.map((skill) => ({ id: createUUIDv4(), skillId: skill.id, cooldown: 0 })),
+    skills: standartBattleSkillList.map((skill) => ({ id: createUUIDv4(), skillId: skill.id, cooldown: 0 })),
   },
   [createUUIDv4()]: {
     id: '',
@@ -33,7 +36,7 @@ export const creatureTemplates: Record<CreatureTemplate['id'], CreatureTemplate>
       movePointsRegeneration: 1,
       actionPoints: 2,
     },
-    skills: Object.values(skills).map((skill) => ({ id: createUUIDv4(), skillId: skill.id, cooldown: 0 })),
+    skills: Object.values(skillMap).map((skill) => ({ id: createUUIDv4(), skillId: skill.id, cooldown: 0 })),
   },
 };
 
@@ -80,7 +83,7 @@ export const createCreatureByTemplate = (creatureTemplate: CreatureTemplate, loc
 });
 
 
-export const mainPlayerCreature = createCreatureByTemplate(playerCreatureTemplate, centerMapLocation);
+export const mainPlayerCreature = createCreatureByTemplate(playerCreatureTemplate, basePlayerSpawnLocation);
 mainPlayerCreature.name = '3@H@T0P';
 
 export const creatures: Record<Creature['id'], Creature> = {

@@ -1,41 +1,57 @@
-import type { UUIDv4 } from '#/modules/Common/utils/uuid';
-import type { Vector2 } from '#modules/__GameHost/@types/Vector';
-
-import type { BattleMapTemplate } from './BattleMapTemplate';
-import type { GlobalLocation } from './GlobalMap';
-import type { Creature } from './Creature';
-import type { IntentionType } from './IntentionType';
-import type { Skill } from './Skill';
+import type { UUIDv4, Vector2 } from '#modules/Common';
 
 export interface BattleLocation {
   id: UUIDv4;
   coordinates: Vector2;
-  creature: Creature | null;
+  battleLocationTemplateId: UUIDv4;
+  battleId: UUIDv4;
+  creatureId: UUIDv4 | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Battle {
   id: UUIDv4;
-  globalLocationId: GlobalLocation['id'];
-  template: BattleMapTemplate;
-  locations: BattleLocation[];
-  creatures: Creature[];
-  rounds: Round[];
+  battleMapTemplateId: UUIDv4;
+  globalLocationId: UUIDv4;
+  isFinished: boolean;
+  result: any; // Some unshaped json
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface Round {
-  battleId: Battle['id'];
-  roundIndex: number;
-  intentions: BattleIntention[];
+export interface BattleRound {
+  id: UUIDv4;
+  battleId: UUIDv4;
+  index: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface BattleIntention {
   id: UUIDv4;
-  battleId: Battle['id'];
-  roundIndex: number;
-  sourceCreatureId: Creature['id'];
-  targetCreatureId: Creature['id'] | null;
-  targetLocation: Vector2 | null;
-  type: IntentionType;
-  skillId: Skill['id'];
+  battleRoundId: UUIDv4;
+  sourceCreatureId: UUIDv4;
+  targetCreatureId: UUIDv4 | null;
+  targetBattleLocationId: UUIDv4 | null;
+  skillId: UUIDv4;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
+export interface BattleLocationTemplate {
+  id: UUIDv4;
+  coordinateX: number;
+  coordinateY: number;
+  battleMapTemplateId: UUIDv4;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface BattleMapTemplate {
+  id: UUIDv4;
+  sizeX: number;
+  sizeY: number;
+  createdAt: Date;
+  updatedAt: Date;
+}

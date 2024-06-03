@@ -1,10 +1,17 @@
-import type { UUIDv4 } from '#/modules/Common/utils/uuid';
+import type { UUIDv4 } from '#modules/Common';
 
-import type { GlobalLocation } from './GlobalMap';
-import type { Battle } from './Battle';
-import type { Skill } from './Skill';
+export interface Skill {
+  id: UUIDv4;
+  slug: string;
+  name: string;
+  description: string;
+  cooldown: number;
+  type: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-export interface Stats {
+interface Stats {
   exp: number;
   healthPoints: number;
   attack: number;
@@ -19,43 +26,69 @@ export interface CreatureTemplate {
   name: string;
   level: number;
   maxStats: Stats;
-  skills: CreatureSkill[];
   avatarURL: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreatureSkill {
+  id: UUIDv4;
+  creatureTemplateId: UUIDv4;
+  skillId: UUIDv4;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Unit?
 export interface Creature {
   id: UUIDv4;
-  templateId: CreatureTemplate['id'];
+  templateId: UUIDv4;
   name: string;
   avatarURL: string;
   level: number;
   maxStats: Stats;
   currentStats: Stats;
-  skills: CreatureSkill[];
-  locationId: GlobalLocation['id'];
-  battleId: Battle['id'] | null;
+  globalLocationId: UUIDv4;
+  battleId: UUIDv4 | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreatureSkill {
   id: UUIDv4;
   cooldown: number; // если 0 то готов к использованию
-  skillId: Skill['id'];
-}
-
-export interface PlayerCreature extends Creature {
+  creatureId: UUIDv4;
+  skillId: UUIDv4;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreatureSpawnerTemplate {
   id: UUIDv4;
   level: number;
-  creatureTemplateId: CreatureTemplate['id'];
+  creatureTemplateId: UUIDv4;
   spawnInterval: number;
   spawnCount: number;
+  spawnLimit: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreatureSpawner {
   id: UUIDv4;
   creatureSpawnerTemplateId: CreatureSpawnerTemplate['id'];
-  location: GlobalLocation['id'];
+  globalLocationId: UUIDv4;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface User {
+  id: UUIDv4;
+  nickname: string;
+  login: string;
+  email: string;
+  password: string;
+  playerCreatureId: UUIDv4;
+  createdAt: Date;
+  updatedAt: Date;
 }
