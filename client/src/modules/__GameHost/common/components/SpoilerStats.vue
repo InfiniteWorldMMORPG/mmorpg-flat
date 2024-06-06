@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-defineProps({
-  header: { type: String, required: true },
-});
+
+interface Props {
+  header: string
+}
+defineProps<Props>();
 
 const isOpen = ref(false);
 const changeSpoiler = () => {
@@ -14,7 +16,7 @@ const changeSpoiler = () => {
   <div class="spoiler">
     <div class="spoiler-header" @click="changeSpoiler">
       <span class="spoiler-toggle-btn">{{ header }}</span>
-      <div class="spoiler-toggle-arrow"> {{isOpen ? '˄' : '˅' }}</div>
+      <div class="spoiler-toggle-arrow"> {{ isOpen ? '˄' : '˅' }}</div>
     </div>
     <div class="spoiler-body" v-if="isOpen">
       <slot></slot>
@@ -29,7 +31,8 @@ const changeSpoiler = () => {
   grid-template-rows: 1fr;
   cursor: pointer;
 }
-.spoiler-toggle-arrow{
+
+.spoiler-toggle-arrow {
   display: flex;
   justify-content: right;
 }
