@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-interface MRSpoiler {
+interface MRSpoilerProps {
   header: string
 }
-defineProps<MRSpoiler>();
+defineProps<MRSpoilerProps>();
 
 const isOpen = ref(false);
 const changeSpoiler = () => {

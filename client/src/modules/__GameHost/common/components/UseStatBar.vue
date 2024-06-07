@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-interface UseStatBar {
+interface UseStatBarProps {
   name: string;
   value: [number, number];
   color: string;
 }
 
-const props = defineProps<UseStatBar>();
+const props = defineProps<UseStatBarProps>();
 const getHPfullness = computed(() => {
   const result = (props.value[0] / props.value[1]) * 100;
 

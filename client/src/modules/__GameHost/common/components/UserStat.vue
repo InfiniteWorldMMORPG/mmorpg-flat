@@ -1,11 +1,11 @@
 <script setup lang="ts">
 
-interface UserStat {
+interface UserStatProps {
   name: string
   value: number
 }
 
-defineProps<UserStat>();
+defineProps<UserStatProps>();
 </script>
 
 <template>
