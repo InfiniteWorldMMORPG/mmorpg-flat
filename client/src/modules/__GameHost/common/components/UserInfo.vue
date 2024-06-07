@@ -1,28 +1,14 @@
 <script setup lang="ts">
-import SpoilerStats from './SpoilerStats.vue';
-import TheStat from './TheStat.vue';
-import TheStatBar from './TheStatBar.vue';
+import MRSpoiler from './MRSpoiler.vue';
+import UserStat from './UserStat.vue';
+import UseStatBar from './UseStatBar.vue';
 import AvatarIcon from './AvatarIcon.vue';
 import { useGameStore } from '../../stores';
-import { computed } from 'vue';
 
 const gameStore = useGameStore();
 
-const userStatsKeys = [
-  { name: 'Exp', PlayerCreatureName: 'exp' },
-  { name: 'HP', PlayerCreatureName: 'healthPoints' },
-  { name: 'Move points', PlayerCreatureName: 'movePoints' },
-];
-const userStats = computed(() => {
-  return userStatsKeys.map(({ name, PlayerCreatureName }) => {
-    return {
-      name,
-      value: [
-        gameStore.playerCreature?.currentStats[PlayerCreatureName],
-        gameStore.playerCreature?.maxStats[PlayerCreatureName]],
-    };
-  });
-});
+defineProps<{ playerCreature: GlobalCreature }>();
+
 </script>
 
 <template>
@@ -35,13 +21,18 @@ const userStats = computed(() => {
         {{ gameStore.playerCreature?.name }}
       </div>
       <div class="user-level">Level: {{ gameStore.playerCreature?.level }}</div>
-      <TheStatBar v-for="stat in userStats" :key="stat.name" :name="stat.name" :value="stat.value" />
+      <UseStatBar name="Exp" color="#ff0000"
+        :value="[playerCreature?.currentStats.exp, playerCreature?.maxStats.exp]" />
+      <UseStatBar name="HP" color="#00ff00"
+        :value="[playerCreature?.currentStats.healthPoints, playerCreature?.maxStats.healthPoints]" />
+      <UseStatBar name="Move points" color="#0000ff"
+        :value="[playerCreature?.currentStats.movePoints, playerCreature?.maxStats.movePoints]" />
     </div>
 
-    <SpoilerStats header="Stats">
-      <TheStat name="Attack" :value="gameStore.playerCreature?.currentStats.healthPoints" />
-      <TheStat name="Armor" :value="gameStore.playerCreature?.currentStats.healthPoints" />
-    </SpoilerStats>
+    <MRSpoiler header="Stats">
+      <UserStat name="Attack" :value="gameStore.playerCreature?.currentStats.healthPoints" />
+      <UserStat name="Armor" :value="gameStore.playerCreature?.currentStats.healthPoints" />
+    </MRSpoiler>
   </div>
 </template>
 

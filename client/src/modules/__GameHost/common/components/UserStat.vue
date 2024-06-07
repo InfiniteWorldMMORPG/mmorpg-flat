@@ -1,15 +1,15 @@
 <script setup lang="ts">
 
-interface Props {
+interface UserStat {
   name: string
   value: number
 }
 
-defineProps<Props>();
+defineProps<UserStat>();
 </script>
 
 <template>
-  <div class="user-stat">{{name}}: {{ value }}</div>
+  <div class="user-stat">{{ name }}: {{ value }}</div>
 </template>
 
 <style>

@@ -38,7 +38,7 @@ const playerChangeGlobalLocation = (location: GlobalLocation): void => {
 
 <template>
   <div class="layout">
-    <UserInfo />
+    <UserInfo :playerCreature="gameStore.playerCreature" />
     <div class="location"></div>
     <div class="sidebar">
       <div class="creatures-list">
