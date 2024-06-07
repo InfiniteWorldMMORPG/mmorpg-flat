@@ -12,8 +12,9 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '#modules': fileURLToPath(new URL('./modules', import.meta.url)),
-      '#': fileURLToPath(new URL('./src', import.meta.url)),
+      '##ge-modules': fileURLToPath(new URL('./src/modules/GameEngine/modules', import.meta.url)),
+      '#modules': fileURLToPath(new URL('./src/modules', import.meta.url)),
+      '#lib': fileURLToPath(new URL('./lib', import.meta.url)),
     }
   }
 });

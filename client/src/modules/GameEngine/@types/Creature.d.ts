@@ -1,4 +1,4 @@
-import type { UUIDv4 } from '#modules/Common';
+import type { UUIDv4 } from '#lib/utils';
 
 export interface Skill {
   id: UUIDv4;

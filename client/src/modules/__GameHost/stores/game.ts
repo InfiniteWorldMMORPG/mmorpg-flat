@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 import type { Creature, GlobalIntention, GlobalLocation, GlobalMap, PlayerCreature } from './@types';
 import { useAuthStore } from './auth';
 
-import { globalMap as globalMapFixture, creatures, globalMapCenterLocation, skills } from '../api/fixtures';
+import { globalMap as globalMapFixture, creatures, globalMapCenterLocation, skills } from '../../GameEngine/fixtures';
 import { isNullOrUndefined } from '../../Common/utils';
 
 export class NotAdjacentLocationError extends Error { constructor() { super('Not adjacent locations'); } }

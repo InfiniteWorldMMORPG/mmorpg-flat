@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 import { createUUIDv4 } from '../../Common/utils';
 
 import type { User } from './@types/User';
-import { mainPlayerCreature } from '../api/fixtures';
+import { mainPlayerCreature } from '../../GameEngine/fixtures';
 
 export const useAuthStore = defineStore('auth', () => {
   const currentUser = ref<User>({

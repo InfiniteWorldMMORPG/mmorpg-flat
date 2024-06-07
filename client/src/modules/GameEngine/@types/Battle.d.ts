@@ -1,4 +1,4 @@
-import type { UUIDv4, Vector2 } from '#modules/Common';
+import type { UUIDv4, Vector2 } from '#lib/utils';
 
 export interface BattleLocation {
   id: UUIDv4;

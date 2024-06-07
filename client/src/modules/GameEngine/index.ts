@@ -1,8 +1,17 @@
+import { TransportHTTPInjectionToken } from '#ge-modules/TransportHTTP';
+import { TransportSSEInjectionToken } from '#ge-modules/TransportSSE';
+import { init } from '#ge-modules/_ROOT_';
+import { inject } from '#lib/DI';
 
-let eventSource: EventTarget | null;
+export const main = async () => {
+  await init();
 
-export const createEventSource = () => {
-  if (eventSource === null) eventSource = new EventTarget();
+  const transportHTTP = inject(TransportHTTPInjectionToken);
+  const transportSSE = inject(TransportSSEInjectionToken);
 
-  return eventSource;
+  return {
+    createGlobalIntention,
+    createBattleIntention,
+    sseAPI: transportSSE,
+  };
 };

@@ -3,8 +3,8 @@ import { IntentionType, type GlobalIntention, type GlobalLocation } from '../sto
 import { isNearbyLocation, useGameStore } from '../stores';
 
 import AvatarIcon from '../common/components/AvatarIcon.vue';
-import { createUUIDv4, isNullOrUndefined } from '../../Common/utils';
-import { skills } from '../api/fixtures';
+import { createUUIDv4, isNullOrUndefined } from '#lib/utils';
+import { skills } from '../../GameEngine/fixtures';
 
 const gameStore = useGameStore();
 
