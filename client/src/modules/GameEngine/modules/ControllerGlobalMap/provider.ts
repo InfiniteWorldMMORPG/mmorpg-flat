@@ -12,10 +12,7 @@ export const GlobalMapControllerInjectionToken: InjectionToken<GlobalMapControll
 };
 
 export const provider = async (): Promise<void> => {
+  const controller = getGlobalMapController();
 
-  // storage.registerMigrations();
-
-  const repository = getGlobalMapController();
-
-  provide(GlobalMapControllerInjectionToken, repository);
+  provide(GlobalMapControllerInjectionToken, controller);
 };

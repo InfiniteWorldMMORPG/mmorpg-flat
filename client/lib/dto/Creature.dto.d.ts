@@ -1,6 +1,6 @@
 import type { UUIDv4 } from '#lib/utils';
 
-import type { GlobalLocationOutputDTO } from './GlobalMap.dto';
+import type { GlobalLocationFlatOutputDTO, GlobalLocationOutputDTO } from './GlobalMap.dto';
 import type { SkillOutputDTO } from './Skill.dto';
 
 interface CreatureStats {
@@ -31,7 +31,7 @@ export interface CreatureOutputDTO {
   maxStats: CreatureStats;
   currentStats: CreatureStats;
   skills: CreatureSkillOutputDTO[];
-  location: GlobalLocationOutputDTO;
+  location: GlobalLocationFlatOutputDTO;
 }
 
 export interface CreatureSkillFlatOutputDTO {

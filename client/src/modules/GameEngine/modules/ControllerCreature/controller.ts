@@ -1,6 +1,6 @@
 import { TransportSSEInjectionToken } from '#ge-modules/TransportSSE';
 import { inject } from '#lib/DI';
-import type { CreatureFlatOutputDTO, GlobalIntentionInputDTO, GlobalLocationFlatOutputDTO, GlobalLocationOutputDTO, GlobalMapOutputDTO } from '#lib/dto';
+import type { CreatureFlatOutputDTO, CreatureOutputDTO, CreatureSkillOutputDTO, GlobalLocationFlatOutputDTO, GlobalLocationOutputDTO, SkillType } from '#lib/dto';
 import { typeKey } from '#lib/utils';
 
 import { CreatureRepositoryInjectionToken } from '#ge-modules/StorageCreature';
@@ -8,8 +8,7 @@ import { GlobalMapRepositoryInjectionToken } from '#ge-modules/StorageGlobalMap'
 import type { GlobalLocation } from '#ge-modules/StorageGlobalMap/@types';
 import type { RequestContext } from '#ge-modules/TransportHTTP';
 
-import { GlobalMapControllerTypeSymbol } from './constants';
-
+import { CreatureControllerTypeSymbol } from './constants';
 
 const globalLocationTransformer = {
   toGlobalLocationFlatOutputDTO(globalLocation: GlobalLocation): GlobalLocationFlatOutputDTO {
@@ -32,7 +31,7 @@ const globalLocationTransformer = {
   },
 };
 
-const sendGlobalMapUpdate = async (context: RequestContext): Promise<void> => {
+const sendPlayerUpdate = async (context: RequestContext): Promise<void> => {
   const creatureStorage = inject(CreatureRepositoryInjectionToken);
 
   const player = await creatureStorage.getFlatCreatureById(context.user.playerCreatureId);
@@ -43,39 +42,42 @@ const sendGlobalMapUpdate = async (context: RequestContext): Promise<void> => {
   const playerLocation = await globalMapStorage.getLocationById(player.globalLocationId);
   if (playerLocation === null) return;
 
-  const globalMap = await globalMapStorage.getMapById(playerLocation.mapId);
-  if (globalMap === null) return;
+  const skills = await creatureStorage.getSkillsByCreatureId(player.id);
 
-  const userNearestLocations = await globalMapStorage.getNearestLocationsForMap(
-    globalMap.id,
-    [playerLocation.coordinateX, playerLocation.coordinateY],
-    2,
-  );
 
-  const globalMapOutput: GlobalMapOutputDTO = {
-    id: globalMap.id,
-    size: [globalMap.sizeX, globalMap.sizeY],
-    locations: userNearestLocations.map(globalLocationTransformer.toGlobalLocationFlatOutputDTO),
+  const playerOutput: CreatureOutputDTO = {
+    id: player.id,
+    name: player.name,
+    avatarURL: player.avatarURL,
+    level: player.level,
+    maxStats: player.maxStats,
+    currentStats: player.currentStats,
+    skills: skills.map((creatureSkill): CreatureSkillOutputDTO => ({
+      id: creatureSkill.id,
+      cooldown: creatureSkill.cooldown,
+      skill: {
+        id: creatureSkill.skill.id,
+        slug: creatureSkill.skill.slug,
+        name: creatureSkill.skill.name,
+        description: creatureSkill.skill.description,
+        cooldown: creatureSkill.skill.cooldown,
+        type: creatureSkill.skill.type as SkillType,
+        iconURL: creatureSkill.skill.iconURL,
+      },
+    })),
+    location: globalLocationTransformer.toGlobalLocationFlatOutputDTO(playerLocation),
   };
 
   const transportSSE = inject(TransportSSEInjectionToken);
-  transportSSE.dispatchEvent(new CustomEvent('globalMapUpdate', { detail: globalMapOutput })); // user????? not for now
+  transportSSE.dispatchEvent(new CustomEvent('playerUpdate', { detail: playerOutput })); // user????? not for now
 };
 
-const applyGlobalIntention = async (context: RequestContext, intentionData: GlobalIntentionInputDTO): Promise<void> => {
-  const globalMapStorage = inject(GlobalMapRepositoryInjectionToken);
-  await globalMapStorage.createGlobalIntention(intentionData);
-
-  await sendGlobalMapUpdate(context);
-};
-
-export const getGlobalMapController = () => {
+export const getCreatureController = () => {
 
   return <const>{
-    [typeKey]: GlobalMapControllerTypeSymbol,
-    sendGlobalMapUpdate: sendGlobalMapUpdate,
-    applyGlobalIntention: applyGlobalIntention,
+    [typeKey]: CreatureControllerTypeSymbol,
+    sendPlayerUpdate: sendPlayerUpdate,
   };
 };
 
-export type GlobalMapController = ReturnType<typeof getGlobalMapController>;
+export type CreatureController = ReturnType<typeof getCreatureController>;

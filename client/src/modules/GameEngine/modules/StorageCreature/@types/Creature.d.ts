@@ -7,6 +7,7 @@ export interface Skill {
   description: string;
   cooldown: number;
   type: string;
+  iconURL: string; // ex. "https://example.com/abc.png" or "!COMPONENT=MoveIcon"
   createdAt: Date;
   updatedAt: Date;
 }

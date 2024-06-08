@@ -1,21 +1,18 @@
 import { type InjectionToken, provide } from '#lib/DI';
 import { typeKey } from '#lib/utils';
 
-import { GlobalMapControllerTypeSymbol } from './constants';
-import { getGlobalMapController, type GlobalMapController } from './controller';
+import { AuthControllerTypeSymbol } from './constants';
+import { getAuthController, type AuthController } from './controller';
 
-export const GlobalMapControllerInjectionToken: InjectionToken<GlobalMapController> = {
-  id: Symbol(GlobalMapControllerTypeSymbol),
-  guard(value: unknown): value is GlobalMapController {
-    return typeof value === 'object' && value != null && typeKey in value && value[typeKey] === GlobalMapControllerTypeSymbol;
+export const AuthControllerInjectionToken: InjectionToken<AuthController> = {
+  id: Symbol(AuthControllerTypeSymbol),
+  guard(value: unknown): value is AuthController {
+    return typeof value === 'object' && value != null && typeKey in value && value[typeKey] === AuthControllerTypeSymbol;
   },
 };
 
 export const provider = async (): Promise<void> => {
+  const controller = getAuthController();
 
-  // storage.registerMigrations();
-
-  const repository = getGlobalMapController();
-
-  provide(GlobalMapControllerInjectionToken, repository);
+  provide(AuthControllerInjectionToken, controller);
 };

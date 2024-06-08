@@ -1,15 +1,22 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
-import { createUUIDv4 } from '../../Common/utils';
+import { whoAmI } from '../api';
 
 import type { User } from './@types/User';
-import { mainPlayerCreature } from '../../GameEngine/fixtures';
 
 export const useAuthStore = defineStore('auth', () => {
-  const currentUser = ref<User>({
-    id: createUUIDv4(),
-    playerCreatureId: mainPlayerCreature.id,
+  const currentUser = ref<User | null>(null);
+
+  whoAmI().then((user) => {
+    if (user === null) {
+      currentUser.value = null;
+      return;
+    }
+    currentUser.value = {
+      ...user,
+      playerCreature: null,
+    };
   });
 
   return { currentUser };

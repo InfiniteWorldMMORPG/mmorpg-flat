@@ -2,21 +2,23 @@ import { createUUIDv4, typeKey, type UUIDv4, type Vector2 } from '#lib/utils';
 
 import type { GlobalIntention, GlobalLocation, GlobalMap } from './@types';
 import { GlobalMapRepositoryTypeSymbol } from './constants';
-import { buildMap, generateLocations } from './fixtureBuilder';
+import { locations, map } from './fixtureBuilder';
 
 const globalMapStorage: Map<UUIDv4, GlobalMap> = new Map();
 const globalLocationStorage: Map<UUIDv4, GlobalLocation> = new Map();
 const globalIntentionStorage: Map<UUIDv4, GlobalIntention> = new Map();
 
 const init = () => {
-  const map = buildMap([9, 9]);
   globalMapStorage.set(map.id, map);
-  const locations = generateLocations(map);
   locations.forEach((location) => globalLocationStorage.set(location.id, location));
 };
 
 const getMapById = async (id: UUIDv4): Promise<GlobalMap | null> => {
   return globalMapStorage.get(id) ?? null;
+};
+
+const getLocationById = async (id: UUIDv4): Promise<GlobalLocation | null> => {
+  return globalLocationStorage.get(id) ?? null;
 };
 
 const getNearestLocationsForMap = async (mapId: UUIDv4, coordinates: Vector2, distance: number = 2): Promise<GlobalLocation[]> => {
@@ -30,7 +32,7 @@ const getNearestLocationsForMap = async (mapId: UUIDv4, coordinates: Vector2, di
   return result;
 };
 
-const createGlobalIntention = (data: Omit<GlobalIntention, 'id' | 'createdAt' | 'updatedAt'>): GlobalIntention => {
+const createGlobalIntention = async (data: Omit<GlobalIntention, 'id' | 'createdAt' | 'updatedAt'>): Promise<GlobalIntention> => {
   const intention = {
     ...data,
     id: createUUIDv4(),
@@ -47,6 +49,7 @@ export const getGlobalMapRepository = () => {
   return <const>{
     [typeKey]: GlobalMapRepositoryTypeSymbol,
     getMapById,
+    getLocationById,
     getNearestLocationsForMap,
     createGlobalIntention,
   };

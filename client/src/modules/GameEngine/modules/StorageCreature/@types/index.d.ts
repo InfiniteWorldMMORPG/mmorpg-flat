@@ -1,1 +1,1 @@
-export * from './GlobalMap';
+export * from './Creature';

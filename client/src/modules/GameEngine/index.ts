@@ -10,8 +10,7 @@ export const main = async () => {
   const transportSSE = inject(TransportSSEInjectionToken);
 
   return {
-    createGlobalIntention,
-    createBattleIntention,
+    httpAPI: transportHTTP,
     sseAPI: transportSSE,
   };
 };

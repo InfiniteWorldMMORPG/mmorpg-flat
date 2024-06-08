@@ -4,5 +4,5 @@ export interface GlobalIntentionInputDTO {
   sourceCreatureId: UUIDv4;
   skillId: UUIDv4;
   targetCreatureId: UUIDv4 | null;
-  targetLocationId: UUIDv4 | null;
+  targetGlobalLocationId: UUIDv4 | null;
 }

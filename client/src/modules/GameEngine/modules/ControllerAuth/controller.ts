@@ -1,33 +1,21 @@
 import { inject } from '#lib/DI';
-import { createUUIDv4, typeKey, type UUIDv4, type Vector2 } from '#lib/utils';
-import type { GlobalMapOutputDTO } from '#lib/dto';
-import { TransportSSEInjectionToken } from '#ge-modules/TransportSSE';
-import { TransportHTTPInjectionToken } from '#ge-modules/TransportHTTP';
+import { typeKey } from '#lib/utils';
 
-import { GlobalMapControllerTypeSymbol } from './constants';
+import type { User } from '#ge-modules/StorageUser/@types';
+import { UserRepositoryInjectionToken } from '#ge-modules/StorageUser';
 
+import { AuthControllerTypeSymbol } from './constants';
 
-
-const sendUserGlobalMapUpdate = (user: User, sessionId: UUIDv4): void => {
-  const globalMap: GlobalMapOutputDTO = ;
-  const transportSSE = inject(TransportSSEInjectionToken);
-  transportSSE.dispatchEvent(new CustomEvent('globalMapUpdate', { detail: globalMap })); // user????? not for now
+const whoAmI = async (token: string): Promise<User | null> => {
+  const userStorage = inject(UserRepositoryInjectionToken);
+  return userStorage.getUserById('c92f224d-6216-45ff-a519-5e18fd5b486e');
 };
 
-const createGlobalIntention = (user: User, sessionId: UUIDv4): void => {
-  const globalMap: GlobalMapOutputDTO = ;
-  const transportSSE = inject(TransportSSEInjectionToken);
-  transportSSE.dispatchEvent(new CustomEvent('globalMapUpdate', { detail: globalMap })); // user????? not for now
-};
-
-export const getGlobalMapController = () => {
-  const transportHTTP = inject(TransportHTTPInjectionToken);
-  transportHTTP.addEventListener('GlobalIntentionApply', callback)
-
+export const getAuthController = () => {
   return <const>{
-    [typeKey]: GlobalMapControllerTypeSymbol,
-    createGlobalIntention,
+    [typeKey]: AuthControllerTypeSymbol,
+    whoAmI,
   };
 };
 
-export type GlobalMapController = ReturnType<typeof getGlobalMapController>;
+export type AuthController = ReturnType<typeof getAuthController>;

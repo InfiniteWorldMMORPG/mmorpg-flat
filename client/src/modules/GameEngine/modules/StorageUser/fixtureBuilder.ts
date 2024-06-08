@@ -4,12 +4,12 @@ import type { User } from './@types';
 
 export const buildUser = (): User => {
   return {
-    id: createUUIDv4(),
+    id: 'c92f224d-6216-45ff-a519-5e18fd5b486e',
     nickname: 'testuser',
     login: 'testuser',
     email: 'testuser@goo.gl',
     password: 'password',
-    playerCreatureId: createUUIDv4(),
+    playerCreatureId: 'bbc932e0-e3fa-42ca-9446-1528c8f47e8e',
     createdAt: new Date(),
     updatedAt: new Date(),
   };

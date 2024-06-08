@@ -1,4 +1,4 @@
-import { compareVectors2, createUUIDv4, isNullOrUndefined, type Vector2 } from '#lib/utils';
+import { compareVectors2, createUUIDv4, isNullOrUndefined, type UUIDv4, type Vector2 } from '#lib/utils';
 
 import type { GlobalMap, GlobalLocation } from './@types';
 
@@ -30,9 +30,9 @@ export const generateLocations = (map: GlobalMap): GlobalLocation[] => {
   return locations;
 };
 
-export const buildMap = (size: Vector2): GlobalMap => {
+export const buildMap = (size: Vector2, id: UUIDv4 = createUUIDv4()): GlobalMap => {
   return {
-    id: createUUIDv4(),
+    id,
     sizeX: size[0],
     sizeY: size[1],
     createdAt: new Date(),
@@ -43,10 +43,10 @@ export const buildMap = (size: Vector2): GlobalMap => {
 // const globalLocationList = generateLocations(globalMap);
 // globalMap.locations = globalLocationList;
 
-// const centerMapCoordinates: Vector2 = [Math.floor(globalMap.size[0] / 2), Math.floor(globalMap.size[1] / 2)];
+export const map = buildMap([9, 9], 'b24025f9-16a8-4ac3-b04d-3d466201ace8');
+export const locations = generateLocations(map);
+export const centerMapCoordinates: Vector2 = [Math.floor(map.sizeX / 2), Math.floor(map.sizeY / 2)];
 
-// const centerMapLocation = globalLocationList.find((location) => compareVectors2(location.coordinates, centerMapCoordinates));
-
-// if (isNullOrUndefined(centerMapLocation)) throw new Error('Center map location not found');
-
-// export const basePlayerSpawnLocation: GlobalLocation = centerMapLocation;
+export const centerMapLocation: GlobalLocation = locations.find(
+  (location) => compareVectors2([location.coordinateX, location.coordinateY], centerMapCoordinates),
+) ?? locations[0];

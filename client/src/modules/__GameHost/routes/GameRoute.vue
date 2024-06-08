@@ -1,37 +1,34 @@
 <script setup lang="ts">
-import { IntentionType, type GlobalIntention, type GlobalLocation } from '../stores/@types';
 import { isNearbyLocation, useGameStore } from '../stores';
 
 import AvatarIcon from '../common/components/AvatarIcon.vue';
-import { createUUIDv4, isNullOrUndefined } from '#lib/utils';
-import { skills } from '../../GameEngine/fixtures';
+import type { GlobalLocationFlatOutputDTO } from '#lib/dto';
 
 const gameStore = useGameStore();
 
-gameStore.init();
 
-setInterval(() => {
-  if (gameStore.playerCreature !== null) {
-    gameStore.playerCreature.currentStats.healthPoints += Number(Math.random() < 0.5) * 2 - 1;
-  }
-}, 5000);
+// setInterval(() => {
+//   if (gameStore.playerCreature !== null) {
+//     gameStore.playerCreature.currentStats.healthPoints += Number(Math.random() < 0.5) * 2 - 1;
+//   }
+// }, 5000);
 
-const playerChangeGlobalLocation = (location: GlobalLocation): void => {
-  const skill = Object.values(skills).find(skill => skill.slug === 'GlobalMove');
-  if (isNullOrUndefined(skill)) return;
+const playerChangeGlobalLocation = (location: GlobalLocationFlatOutputDTO): void => {
+  // const skill = Object.values(skills).find(skill => skill.slug === 'GlobalMove');
+  // if (isNullOrUndefined(skill)) return;
 
-  if (isNullOrUndefined(gameStore.playerCreature)) return;
+  // if (isNullOrUndefined(gameStore.playerCreature)) return;
 
-  const intention: GlobalIntention = {
-    id: createUUIDv4(),
-    sourceCreatureId: gameStore.playerCreature.id,
-    targetCreatureId: null,
-    targetLocationId: location.id,
-    type: IntentionType.TARGET_TO_LOCATION,
-    skillId: skill.id,
-  };
+  // const intention: GlobalIntention = {
+  //   id: createUUIDv4(),
+  //   sourceCreatureId: gameStore.playerCreature.id,
+  //   targetCreatureId: null,
+  //   targetLocationId: location.id,
+  //   type: IntentionType.TARGET_TO_LOCATION,
+  //   skillId: skill.id,
+  // };
 
-  gameStore.runGlobalIntention(intention);
+  // gameStore.runGlobalIntention(intention);
 };
 
 </script>
@@ -90,16 +87,17 @@ const playerChangeGlobalLocation = (location: GlobalLocation): void => {
           }"
           @click="playerChangeGlobalLocation(location)"
         >
-          <span v-if="location.id === gameStore.playerCreature?.locationId">X</span>
+          <span v-if="location.id === gameStore.playerCreature?.location.id">X</span>
         </div>
       </div>
     </div>
     <div class="bottombar">
       <div class="skill-bar">
         <div
-          v-for="location in gameStore.minimapLocations"
+          v-for="creatureSkill in gameStore.playerCreature?.skills ?? []"
+          :key="creatureSkill.id"
           class="skill-bar-cell"
-        ></div>
+        >{{ creatureSkill.skill.name }}</div>
         <div class="skill-bar-cell"></div>
         <div class="skill-bar-cell"></div>
         <div class="skill-bar-cell"></div>
