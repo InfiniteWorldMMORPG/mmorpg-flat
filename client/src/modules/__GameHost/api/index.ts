@@ -8,7 +8,12 @@ export const whoAmI = async (): Promise<UserFlatOutputDTO | null> => {
   return httpAPI.connect(token);
 };
 
-export const applyGlobalIntention = async (intention: GlobalIntentionInputDTO): Promise<void> => {
+export const refresh = async (): Promise<void> => {
+  const token = '';
+  await httpAPI.refresh(token);
+};
+
+export const sendGlobalIntentionToServer = async (intention: GlobalIntentionInputDTO): Promise<void> => {
   const token = '';
   await httpAPI.applyGlobalIntention(token, intention);
 };

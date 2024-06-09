@@ -1,34 +1,30 @@
 <script setup lang="ts">
-import { isNearbyLocation, useGameStore } from '../stores';
+import { isNullOrUndefined, isNearbyLocation, isNearbyCoordinates } from '#lib/utils';
 
+import type { GlobalIntentionInputDTO, GlobalLocationFlatOutputDTO } from '#lib/dto';
+
+import { useGameStore } from '../stores';
 import AvatarIcon from '../common/components/AvatarIcon.vue';
-import type { GlobalLocationFlatOutputDTO } from '#lib/dto';
 
 const gameStore = useGameStore();
 
-
-// setInterval(() => {
-//   if (gameStore.playerCreature !== null) {
-//     gameStore.playerCreature.currentStats.healthPoints += Number(Math.random() < 0.5) * 2 - 1;
-//   }
-// }, 5000);
-
 const playerChangeGlobalLocation = (location: GlobalLocationFlatOutputDTO): void => {
-  // const skill = Object.values(skills).find(skill => skill.slug === 'GlobalMove');
-  // if (isNullOrUndefined(skill)) return;
+  const player = gameStore.playerCreature;
+  if (isNullOrUndefined(player)) return;
 
-  // if (isNullOrUndefined(gameStore.playerCreature)) return;
+  if (player.location.id === location.id) return;
 
-  // const intention: GlobalIntention = {
-  //   id: createUUIDv4(),
-  //   sourceCreatureId: gameStore.playerCreature.id,
-  //   targetCreatureId: null,
-  //   targetLocationId: location.id,
-  //   type: IntentionType.TARGET_TO_LOCATION,
-  //   skillId: skill.id,
-  // };
+  const creatureSkill = player.skills.find((creatureSkill) => creatureSkill.skill.slug === 'GlobalMove');
+  if (isNullOrUndefined(creatureSkill)) return;
 
-  // gameStore.runGlobalIntention(intention);
+  const intention: GlobalIntentionInputDTO = {
+    sourceCreatureId: player.id,
+    targetCreatureId: null,
+    targetGlobalLocationId: location.id,
+    skillId: creatureSkill.skill.id,
+  };
+
+  gameStore.applyGlobalIntention(intention);
 };
 
 </script>
@@ -76,18 +72,21 @@ const playerChangeGlobalLocation = (location: GlobalLocationFlatOutputDTO): void
         <div class="creatures-list-header">Creatures on Location</div>
         <div class="creatures-list-item">User</div>
       </div>
-      <div class="minimap">
+      <div v-if="!isNullOrUndefined(gameStore.playerLocation)" class="minimap">
         <div
           v-for="location in gameStore.minimapLocations"
           :key="location.id"
           :class="{
             'minimap-location-cell': true,
             'minimap-location-cell-impassable': !location.canMove,
-            'minimap-location-cell-can-move': location.canMove && isNearbyLocation(gameStore.playerLocation, location, 1),
+            'minimap-location-cell-can-move': location.canMove
+              && isNearbyCoordinates(gameStore.playerLocation.coordinates, location.coordinates, 1)
+              && location.id !== gameStore.playerLocation?.id,
           }"
           @click="playerChangeGlobalLocation(location)"
         >
-          <span v-if="location.id === gameStore.playerCreature?.location.id">X</span>
+        <span v-if="location.id === gameStore.playerLocation.id">X</span>
+        <span v-else class="minimap-location-coordinates">{{ location.coordinates[0] }} : {{ location.coordinates[1] }}</span>
         </div>
       </div>
     </div>
@@ -243,6 +242,7 @@ const playerChangeGlobalLocation = (location: GlobalLocationFlatOutputDTO): void
   display: grid;
   place-items: center;
   user-select: none;
+  position: relative;
 }
 
 .minimap-location-cell-impassable {
@@ -252,6 +252,12 @@ const playerChangeGlobalLocation = (location: GlobalLocationFlatOutputDTO): void
 
 .minimap-location-cell-can-move {
   cursor: pointer;
+}
+
+.minimap-location-coordinates {
+  position: absolute;
+  z-index: 0;
+  color: hsl(0deg 0% 100% / 40%);
 }
 
 .bottombar {

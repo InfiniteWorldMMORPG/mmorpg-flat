@@ -5,6 +5,7 @@ export * from './getRandomInt';
 
 export * from './uuid';
 export * from './Vector';
+export * from './isNearbyCoordinates';
 
 export * from './transformers';
 

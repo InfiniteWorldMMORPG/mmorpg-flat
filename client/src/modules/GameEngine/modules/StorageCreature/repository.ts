@@ -57,6 +57,10 @@ const getFullCreatureById = async (id: UUIDv4): Promise<Creature | null> => {
   return null;
 };
 
+const updateCreature = async (creature: Creature): Promise<void> => {
+  creatureStorage.set(creature.id, creature);
+};
+
 const getSkillsByCreatureId = async (creatureId: UUIDv4): Promise<Array<CreatureSkill & { skill: Skill }>> => {
   const result: Array<CreatureSkill & { skill: Skill }> = [];
   for (const creatureSkill of creatureSkillStorage.values()) {
@@ -65,12 +69,28 @@ const getSkillsByCreatureId = async (creatureId: UUIDv4): Promise<Array<Creature
   return result;
 };
 
+const getSkillById = async (id: UUIDv4): Promise<Skill | null> => {
+  return skillStorage.get(id) ?? null;
+};
+
+const findCreatureSkill = async (creatureId: UUIDv4, skillId: UUIDv4): Promise<[CreatureSkill | null, Skill | null]> => {
+  for (const creatureSkill of creatureSkillStorage.values()) {
+    if (creatureSkill.creatureId === creatureId && creatureSkill.skillId === skillId) {
+      const skill = await getSkillById(creatureSkill.skillId);
+      return [creatureSkill, skill];
+    }
+  }
+  return [null, null];
+};
+
 export const getCreatureRepository = () => {
   init();
   return <const>{
     [typeKey]: CreatureRepositoryTypeSymbol,
     getFlatCreatureById,
+    updateCreature,
     getSkillsByCreatureId,
+    findCreatureSkill,
   };
 };
 
