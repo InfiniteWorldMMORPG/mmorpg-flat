@@ -1,8 +1,8 @@
-import type { UUIDv4 } from '#modules/__GameHost/utils/uuid';
-
-import type { PlayerCreature } from './Creature';
+import type { CreatureOutputDTO } from '#lib/dto';
+import type { UUIDv4 } from '#lib/utils';
 
 export interface User {
   id: UUIDv4;
-  playerCreatureId: PlayerCreature['id'];
+  playerCreatureId: UUIDv4;
+  playerCreature: CreatureOutputDTO | null;
 }

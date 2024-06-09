@@ -1,6 +1,6 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "include": ["env.d.ts", "lib/**/*", "src/**/*", "src/**/*.vue"],
   "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
     "composite": true,
@@ -11,13 +11,19 @@
 
     "baseUrl": ".",
     "paths": {
+      "#ge-modules": [
+        "./src/modules/GameEngine/modules"
+      ],
+      "#ge-modules/*": [
+        "./src/modules/GameEngine/modules/*"
+      ],
       "#modules": [
         "./src/modules"
       ],
       "#modules/*": [
         "./src/modules/*"
       ],
-      "#/*": ["./src/*"]
+      "#lib/*": ["./lib/*"]
     }
   }
 }
