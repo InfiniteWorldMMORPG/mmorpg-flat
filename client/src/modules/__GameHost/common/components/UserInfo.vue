@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import MRSpoiler from './MRSpoiler.vue';
 import UserStat from './UserStat.vue';
-import UseStatBar from './UseStatBar.vue';
+import UserStatBar from './UserStatBar.vue';
 import AvatarIcon from './AvatarIcon.vue';
-import { useGameStore } from '../../stores';
+import type { CreatureOutputDTO } from '#lib/dto';
 
-const gameStore = useGameStore();
 
-defineProps<{ playerCreature: GlobalCreature }>();
+defineProps<{ playerCreature: CreatureOutputDTO }>();
 
+const BAR_COLORS = {
+  hp: 'hsl(120deg 100% 50%)',
+  movePoints: 'hsl(240deg 100% 50%)',
+  exp: 'hsl(0deg 0% 49.75% / 50%)',
+};
 </script>
 
 <template>
@@ -17,21 +21,21 @@ defineProps<{ playerCreature: GlobalCreature }>();
       <div class="user-avatar">
         <AvatarIcon />
       </div>
-      <div class="user-name" :title="gameStore.playerCreature?.name">
-        {{ gameStore.playerCreature?.name }}
+      <div class="user-name" :title="playerCreature.name">
+        {{ playerCreature.name }}
       </div>
-      <div class="user-level">Level: {{ gameStore.playerCreature?.level }}</div>
-      <UseStatBar name="Exp" color="#ff0000"
-        :value="[playerCreature?.currentStats.exp, playerCreature?.maxStats.exp]" />
-      <UseStatBar name="HP" color="#00ff00"
-        :value="[playerCreature?.currentStats.healthPoints, playerCreature?.maxStats.healthPoints]" />
-      <UseStatBar name="Move points" color="#0000ff"
-        :value="[playerCreature?.currentStats.movePoints, playerCreature?.maxStats.movePoints]" />
+      <div class="user-level">Level: {{ playerCreature.level }}</div>
+      <UserStatBar name="Exp" :color="BAR_COLORS.exp"
+        :value="[playerCreature.currentStats.exp, playerCreature.maxStats.exp]" />
+      <UserStatBar name="HP" :color="BAR_COLORS.hp"
+        :value="[playerCreature.currentStats.healthPoints, playerCreature.maxStats.healthPoints]" />
+      <UserStatBar name="Move points" :color="BAR_COLORS.movePoints"
+        :value="[playerCreature.currentStats.movePoints, playerCreature.maxStats.movePoints]" />
     </div>
 
     <MRSpoiler header="Stats">
-      <UserStat name="Attack" :value="gameStore.playerCreature?.currentStats.healthPoints" />
-      <UserStat name="Armor" :value="gameStore.playerCreature?.currentStats.healthPoints" />
+      <UserStat name="Attack" :value="playerCreature.currentStats.healthPoints" />
+      <UserStat name="Armor" :value="playerCreature.currentStats.healthPoints" />
     </MRSpoiler>
   </div>
 </template>

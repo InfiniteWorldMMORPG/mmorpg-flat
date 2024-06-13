@@ -31,7 +31,7 @@ const playerChangeGlobalLocation = (location: GlobalLocationFlatOutputDTO): void
 
 <template>
   <div class="layout">
-    <UserInfo :playerCreature="gameStore.playerCreature" />
+    <UserInfo v-if="!isNullOrUndefined(gameStore.playerCreature)" :playerCreature="gameStore.playerCreature" />
     <div class="location"></div>
     <div class="sidebar">
       <div class="creatures-list">
