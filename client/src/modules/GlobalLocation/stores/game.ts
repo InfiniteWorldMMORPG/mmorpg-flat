@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 
 import type { CreatureOutputDTO, GlobalIntentionInputDTO, GlobalLocationFlatOutputDTO, GlobalMapOutputDTO } from '#lib/dto';
 
-import { refresh, sendGlobalIntentionToServer, subscribeOnGlobalMapUpdate, subscribeOnPlayerUpdate } from '../api';
+import { refresh, sendGlobalIntentionToServer, subscribeOnGlobalMapUpdate, subscribeOnPlayerUpdate } from '../../__GameHost/api';
 
 export const useGameStore = defineStore('game', () => {
   const playerCreature = ref<CreatureOutputDTO | null>(null);

@@ -1,6 +1,6 @@
 import { createUUIDv4, isNullOrUndefined } from '#lib/utils';
 
-import type { CreatureTemplate, CreatureSpawnerTemplate, GlobalLocation, Battle, Creature } from '../../__GameHost/stores/@types';
+import type { CreatureTemplate, CreatureSpawnerTemplate, GlobalLocation, Battle, Creature } from '../../GlobalLocation/stores/@types';
 import { basePlayerSpawnLocation } from './GlobalMap';
 import { skillMap, standartBattleSkillList } from './SkillRecords';
 

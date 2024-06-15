@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { isNullOrUndefined, isNearbyLocation, isNearbyCoordinates } from '#lib/utils';
+import { isNullOrUndefined, isNearbyCoordinates } from '#lib/utils';
 
 import type { GlobalIntentionInputDTO, GlobalLocationFlatOutputDTO } from '#lib/dto';
 
 import { useGameStore } from '../stores';
-import UserInfo from '../common/components/UserInfo.vue';
+import UserInfo from '../components/UserInfo.vue';
 
 const gameStore = useGameStore();
 
@@ -47,7 +47,7 @@ const playerChangeGlobalLocation = (location: GlobalLocationFlatOutputDTO): void
             'minimap-location-cell-impassable': !location.canMove,
             'minimap-location-cell-can-move': location.canMove
               && isNearbyCoordinates(gameStore.playerLocation.coordinates, location.coordinates, 1)
-              && location.id !== gameStore.playerLocation?.id,
+              && location.id !== gameStore.playerLocation.id,
           }"
           @click="playerChangeGlobalLocation(location)"
         >
@@ -79,6 +79,8 @@ const playerChangeGlobalLocation = (location: GlobalLocationFlatOutputDTO): void
 .layout {
   width: 100%;
   height: 100%;
+  box-sizing: border-box;
+
 
   display: grid;
   grid-template-columns: 1fr 256px;

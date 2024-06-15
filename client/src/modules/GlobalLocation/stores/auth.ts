@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
-import { whoAmI } from '../api';
+import { whoAmI } from '../../__GameHost/api';
 
 import type { User } from './@types/User';
 

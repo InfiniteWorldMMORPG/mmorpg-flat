@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import HomeRoute from './HomeRoute.vue';
-import GameRoute from './GameRoute.vue';
+
+import { buildRoutes } from '#modules/GlobalLocation';
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,10 +12,6 @@ export const router = createRouter({
       name: 'home',
       component: HomeRoute,
     },
-    {
-      path: '/game',
-      name: 'game',
-      component: GameRoute,
-    },
+    ...buildRoutes('/game'),
   ],
 });
