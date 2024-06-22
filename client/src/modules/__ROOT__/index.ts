@@ -1,12 +1,12 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 
-import GameApp from './GameApp.vue';
+import RootComponent from './RootComponent.vue';
 import { router } from './routes';
 
 import './assets/main.css';
 
-const app = createApp(GameApp);
+const app = createApp(RootComponent);
 
 app.use(createPinia());
 app.use(router);

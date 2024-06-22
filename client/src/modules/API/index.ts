@@ -19,7 +19,7 @@ export const sendGlobalIntentionToServer = async (intention: GlobalIntentionInpu
 };
 
 export const subscribeOnGlobalMapUpdate = (callback: (map: GlobalMapOutputDTO) => void): void => {
-  sseAPI.addEventListener('globalMapUpdate', (event: Event ) => {
+  sseAPI.addEventListener('globalMapUpdate', (event: Event) => {
     const map: GlobalMapOutputDTO = (event as CustomEvent<GlobalMapOutputDTO>).detail;
     console.log('globalMapUpdate', map);
     callback(map);
@@ -27,7 +27,7 @@ export const subscribeOnGlobalMapUpdate = (callback: (map: GlobalMapOutputDTO) =
 };
 
 export const subscribeOnPlayerUpdate = (callback: (player: CreatureOutputDTO) => void): void => {
-  sseAPI.addEventListener('playerUpdate', (event: Event ) => {
+  sseAPI.addEventListener('playerUpdate', (event: Event) => {
     const player: CreatureOutputDTO = (event as CustomEvent<CreatureOutputDTO>).detail;
     console.log('playerUpdate', player);
     callback(player);

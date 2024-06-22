@@ -53,6 +53,16 @@ const getFlatCreatureById = async (id: UUIDv4): Promise<Creature | null> => {
   return creatureStorage.get(id) ?? null;
 };
 
+const findCreatureByGlobalLocationId = async (locationId: UUIDv4): Promise<Creature[]> => {
+  const result = [];
+
+  for (const creature of creatureStorage.values()) {
+    if (creature.globalLocationId === locationId) result.push(creature);
+  }
+
+  return result;
+};
+
 const getFullCreatureById = async (id: UUIDv4): Promise<Creature | null> => {
   return null;
 };
@@ -91,6 +101,7 @@ export const getCreatureRepository = () => {
     updateCreature,
     getSkillsByCreatureId,
     findCreatureSkill,
+    findCreatureByGlobalLocationId,
   };
 };
 
