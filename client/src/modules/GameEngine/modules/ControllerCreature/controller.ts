@@ -44,6 +44,7 @@ const sendPlayerUpdate = async (context: RequestContext): Promise<void> => {
 
   const skills = await creatureStorage.getSkillsByCreatureId(player.id);
 
+  const creaturesOnLocation = await creatureStorage.findCreatureByGlobalLocationId(playerLocation.id);
 
   const playerOutput: CreatureOutputDTO = {
     id: player.id,
@@ -65,7 +66,7 @@ const sendPlayerUpdate = async (context: RequestContext): Promise<void> => {
         iconURL: creatureSkill.skill.iconURL,
       },
     })),
-    location: globalLocationTransformer.toGlobalLocationFlatOutputDTO(playerLocation),
+    location: globalLocationTransformer.toGlobalLocationOutputDTO(playerLocation, creaturesOnLocation),
   };
 
   const transportSSE = inject(TransportSSEInjectionToken);

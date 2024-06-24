@@ -20,7 +20,7 @@ export interface CreatureFlatOutputDTO {
   level: number;
   maxStats: CreatureStats;
   currentStats: CreatureStats;
-  locationId: UUIDv4;
+  globalLocationId: UUIDv4;
 }
 
 export interface CreatureOutputDTO {
@@ -31,7 +31,7 @@ export interface CreatureOutputDTO {
   maxStats: CreatureStats;
   currentStats: CreatureStats;
   skills: CreatureSkillOutputDTO[];
-  location: GlobalLocationFlatOutputDTO;
+  location: GlobalLocationOutputDTO;
 }
 
 export interface CreatureSkillFlatOutputDTO {
