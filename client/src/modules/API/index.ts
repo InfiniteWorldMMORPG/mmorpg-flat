@@ -18,16 +18,22 @@ export const sendGlobalIntentionToServer = async (intention: GlobalIntentionInpu
   await httpAPI.applyGlobalIntention(token, intention);
 };
 
-export const subscribeOnGlobalMapUpdate = (callback: (map: GlobalMapOutputDTO) => void): void => {
-  sseAPI.addEventListener('globalMapUpdate', (event: Event) => {
+export const subscribeOnGlobalMapUpdate = async (callback: (map: GlobalMapOutputDTO) => void): Promise<void> => {
+  const eventSource = await sseAPI.connect('');
+  if (eventSource === null) return; // @TODO(ikos): нужно подумать как сообщать об ошибке
+
+  eventSource.addEventListener('globalMapUpdate', (event: Event) => {
     const map: GlobalMapOutputDTO = (event as CustomEvent<GlobalMapOutputDTO>).detail;
     console.log('globalMapUpdate', map);
     callback(map);
   });
 };
 
-export const subscribeOnPlayerUpdate = (callback: (player: CreatureOutputDTO) => void): void => {
-  sseAPI.addEventListener('playerUpdate', (event: Event) => {
+export const subscribeOnPlayerUpdate = async (callback: (player: CreatureOutputDTO) => void): Promise<void> => {
+  const eventSource = await sseAPI.connect('');
+  if (eventSource === null) return; // @TODO(ikos): нужно подумать как сообщать об ошибке
+
+  eventSource.addEventListener('playerUpdate', (event: Event) => {
     const player: CreatureOutputDTO = (event as CustomEvent<CreatureOutputDTO>).detail;
     console.log('playerUpdate', player);
     callback(player);

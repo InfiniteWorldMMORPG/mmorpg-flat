@@ -1,5 +1,8 @@
 import type { UUIDv4 } from '#lib/utils';
 
+import type { User } from '#ge-modules/StorageUser/@types';
+import type { Creature, Skill } from '#ge-modules/StorageCreature/@types';
+
 export interface GlobalMap {
   id: UUIDv4;
   sizeX: number;
@@ -28,4 +31,17 @@ export interface GlobalIntention {
   skillId: UUIDv4;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface GlobalIntentionDependencies {
+  sourceUser: User;
+  sourceCreature: Creature;
+  targetUser: User | null;
+  targetCreature: Creature | null;
+  targetGlobalLocation: GlobalLocation | null;
+  skill: Skill;
+}
+
+export interface GlobalIntentionWithDependencies extends GlobalIntention, GlobalIntentionDependencies {
+
 }

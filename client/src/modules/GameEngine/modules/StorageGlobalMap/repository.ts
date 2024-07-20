@@ -1,3 +1,8 @@
+import { CreatureRepositoryInjectionToken } from '#ge-modules/StorageCreature';
+import type { Creature } from '#ge-modules/StorageCreature/@types';
+import { UserRepositoryInjectionToken } from '#ge-modules/StorageUser';
+import type { User } from '#ge-modules/StorageUser/@types';
+import { inject } from '#lib/DI';
 import { createUUIDv4, typeKey, type UUIDv4, type Vector2 } from '#lib/utils';
 
 import type { GlobalIntention, GlobalLocation, GlobalMap } from './@types';
@@ -44,6 +49,50 @@ const createGlobalIntention = async (data: Omit<GlobalIntention, 'id' | 'created
   return intention;
 };
 
+interface GlobalIntentionDependencies {
+  sourceUser: User;
+  sourceCreature: Creature;
+  targetUser: User | null;
+  targetCreature: Creature | null;
+}
+
+interface GlobalIntentionWithDependencies extends GlobalIntention, GlobalIntentionDependencies {
+
+}
+
+const globalIntentionTransform = {
+  toGlobalIntentionWithDependencies(intention: GlobalIntention, deps: GlobalIntentionDependencies): GlobalIntentionWithDependencies {
+    return {
+      ...intention,
+      ...deps,
+    };
+  },
+};
+
+const getIntentionListByTimeRange = async (start: Date, end: Date = new Date()): Promise<GlobalIntentionWithDependencies[]> => {
+  const result: GlobalIntentionWithDependencies[] = [];
+  const userStorage = inject(UserRepositoryInjectionToken);
+  const creatureStorage = inject(CreatureRepositoryInjectionToken);
+
+  for (const [, intention] of globalIntentionStorage) {
+    if (intention.createdAt >= start && intention.createdAt <= end) {
+      const [sourceUser, sourceCreature, targetUser, targetCreature] = await Promise.all([
+        await userStorage.getUserByCreatureId(intention.sourceCreatureId),
+        await creatureStorage.getFlatCreatureById(intention.sourceCreatureId),
+        intention.targetCreatureId === null ? null : await userStorage.getUserByCreatureId(intention.targetCreatureId),
+        intention.targetCreatureId === null ? null : await creatureStorage.getFlatCreatureById(intention.targetCreatureId),
+      ]);
+
+      if (sourceUser === null || sourceCreature === null) continue;
+      result.push(
+        globalIntentionTransform.toGlobalIntentionWithDependencies(intention, { sourceUser, sourceCreature, targetUser, targetCreature }),
+      );
+    }
+  }
+  result.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  return result;
+};
+
 export const getGlobalMapRepository = () => {
   init();
   return <const>{
@@ -52,6 +101,7 @@ export const getGlobalMapRepository = () => {
     getLocationById,
     getNearestLocationsForMap,
     createGlobalIntention,
+    getIntentionListByTimeRange,
   };
 };
 

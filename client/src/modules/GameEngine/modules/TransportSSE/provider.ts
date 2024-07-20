@@ -1,15 +1,34 @@
-import { type InjectionToken, provide } from '#lib/DI';
+import { AuthControllerInjectionToken } from '#ge-modules/ControllerAuth';
+import { type InjectionToken, provide, inject } from '#lib/DI';
+import type { UUIDv4 } from '#lib/utils';
 
+export interface TransportSSE {
+  clients: Record<UUIDv4, EventTarget>;
+  connect(token: string): Promise<EventTarget | null>;
+}
 
-export const TransportSSEInjectionToken: InjectionToken<EventTarget> = {
+export const TransportSSEInjectionToken: InjectionToken<TransportSSE> = {
   id: Symbol('TransportSSE'),
-  guard(value: unknown): value is EventTarget {
-    return typeof value === 'object' && value != null && value instanceof EventTarget;
+  guard(value: unknown): value is TransportSSE {
+    return typeof value === 'object' && value != null && 'connect' in value;
   },
 };
 
 export const provider = async (): Promise<void> => {
-  const eventSource: EventTarget = new EventTarget();
+  const authController = inject(AuthControllerInjectionToken);
 
-  provide(TransportSSEInjectionToken, eventSource);
+  const transport: TransportSSE = {
+    clients: {},
+    async connect(token: string): Promise<EventTarget | null> {
+      const user = await authController.whoAmI(token);
+      if (user === null) return null;
+
+      if (user.id in this.clients) return this.clients[user.id];
+
+      this.clients[user.id] = new EventTarget();
+      return this.clients[user.id];
+    }
+  };
+
+  provide(TransportSSEInjectionToken, transport);
 };

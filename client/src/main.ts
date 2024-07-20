@@ -1,3 +1,3 @@
-import { mount } from './modules/__ROOT__';
+import { mount } from './modules/_ROOT_';
 
 mount();

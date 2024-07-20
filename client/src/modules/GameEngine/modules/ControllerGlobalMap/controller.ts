@@ -1,6 +1,6 @@
 import { inject } from '#lib/DI';
 import type { CreatureFlatOutputDTO, GlobalIntentionInputDTO, GlobalLocationFlatOutputDTO, GlobalLocationOutputDTO, GlobalMapOutputDTO } from '#lib/dto';
-import { typeKey, isNearbyLocation } from '#lib/utils';
+import { typeKey, isNearbyLocation, isNullOrUndefined } from '#lib/utils';
 
 import type { Creature } from '#ge-modules/StorageCreature/@types';
 import { CreatureRepositoryInjectionToken } from '#ge-modules/StorageCreature';
@@ -34,6 +34,11 @@ const globalLocationTransformer = {
 };
 
 const sendGlobalMapUpdate = async (context: RequestContext): Promise<void> => {
+  const transportSSE = inject(TransportSSEInjectionToken);
+  const userSoket = transportSSE.clients[context.user.id];
+
+  if (isNullOrUndefined(userSoket)) return;
+
   const creatureStorage = inject(CreatureRepositoryInjectionToken);
 
   const player = await creatureStorage.getFlatCreatureById(context.user.playerCreatureId);
@@ -59,8 +64,7 @@ const sendGlobalMapUpdate = async (context: RequestContext): Promise<void> => {
     locations: userNearestLocations.map(globalLocationTransformer.toGlobalLocationFlatOutputDTO),
   };
 
-  const transportSSE = inject(TransportSSEInjectionToken);
-  transportSSE.dispatchEvent(new CustomEvent('globalMapUpdate', { detail: globalMapOutput })); // user????? not for now
+  userSoket.dispatchEvent(new CustomEvent('globalMapUpdate', { detail: globalMapOutput }));
 };
 
 const moveCreatureToGlobalLocation = async (

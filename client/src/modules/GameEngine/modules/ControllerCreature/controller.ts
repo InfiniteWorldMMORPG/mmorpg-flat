@@ -1,7 +1,7 @@
 import { TransportSSEInjectionToken } from '#ge-modules/TransportSSE';
 import { inject } from '#lib/DI';
 import type { CreatureFlatOutputDTO, CreatureOutputDTO, CreatureSkillOutputDTO, GlobalLocationFlatOutputDTO, GlobalLocationOutputDTO, SkillType } from '#lib/dto';
-import { typeKey } from '#lib/utils';
+import { isNullOrUndefined, typeKey } from '#lib/utils';
 
 import { CreatureRepositoryInjectionToken } from '#ge-modules/StorageCreature';
 import { GlobalMapRepositoryInjectionToken } from '#ge-modules/StorageGlobalMap';
@@ -32,6 +32,11 @@ const globalLocationTransformer = {
 };
 
 const sendPlayerUpdate = async (context: RequestContext): Promise<void> => {
+  const transportSSE = inject(TransportSSEInjectionToken);
+  const userSoket = transportSSE.clients[context.user.id];
+
+  if (isNullOrUndefined(userSoket)) return;
+
   const creatureStorage = inject(CreatureRepositoryInjectionToken);
 
   const player = await creatureStorage.getFlatCreatureById(context.user.playerCreatureId);
@@ -69,8 +74,7 @@ const sendPlayerUpdate = async (context: RequestContext): Promise<void> => {
     location: globalLocationTransformer.toGlobalLocationOutputDTO(playerLocation, creaturesOnLocation),
   };
 
-  const transportSSE = inject(TransportSSEInjectionToken);
-  transportSSE.dispatchEvent(new CustomEvent('playerUpdate', { detail: playerOutput })); // user????? not for now
+  userSoket.dispatchEvent(new CustomEvent('playerUpdate', { detail: playerOutput }));
 };
 
 export const getCreatureController = () => {

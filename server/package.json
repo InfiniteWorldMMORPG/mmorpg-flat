@@ -1,0 +1,29 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsx watch --env-file=.env ./src/index.ts",
+    "build": "tsc",
+    "prod:start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^4.28.1",
+    "pg": "^8.12.0",
+    "tsconfig-paths": "^4.2.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node21": "^21.0.3",
+    "@types/node": "^20.14.10",
+    "@types/pg": "^8.11.6",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "eslint": "^8.57.0",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3"
+  }
+}
