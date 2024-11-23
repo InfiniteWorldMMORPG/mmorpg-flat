@@ -1,4 +1,6 @@
-import { typeKey, type UUIDv4 } from '#lib/utils';
+import { createUUIDv4, typeKey, type UUIDv4 } from '#lib/utils';
+import { centerMapLocation } from '#modules/StorageGlobalMap/fixtureBuilder';
+import { User } from '#modules/StorageUser/@types';
 
 import type {
   Creature, CreatureSkill,
@@ -11,6 +13,8 @@ import {
   battleBaseAttackSkill,
   battleBaseHealSkill,
   battleMoveSkill,
+  buildCreature,
+  buildCreatureSkillRelationList,
   creaturePlayerTemplateSkills,
   creatureTriangleTemplateSkills,
   globalAttackSkill,
@@ -93,6 +97,18 @@ const findCreatureSkill = async (creatureId: UUIDv4, skillId: UUIDv4): Promise<[
   return [null, null];
 };
 
+const createCreature = async (templateId: UUIDv4): Promise<Creature | null> => {
+  return null;
+};
+
+const createPlayerCreature = async (nickname: string): Promise<Creature | null> => {
+  const player = buildCreature(playerCreatureTemplate, nickname, centerMapLocation.id, createUUIDv4());
+  creatureStorage.set(player.id, player);
+  const playerSkills = buildCreatureSkillRelationList(player.id, creaturePlayerTemplateSkills);
+  playerSkills.forEach((creatureSkill) => creatureSkillStorage.set(creatureSkill.id, creatureSkill));
+  return player;
+};
+
 export const getCreatureRepository = () => {
   init();
   return <const>{
@@ -102,6 +118,8 @@ export const getCreatureRepository = () => {
     getSkillsByCreatureId,
     findCreatureSkill,
     findCreatureByGlobalLocationId,
+    createPlayerCreature,
+    createCreature,
   };
 };
 

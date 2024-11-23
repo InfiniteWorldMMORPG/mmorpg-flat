@@ -1,15 +1,22 @@
-import { inject } from '#lib/DI';
-import type { CreatureFlatOutputDTO, GlobalIntentionInputDTO, GlobalLocationFlatOutputDTO, GlobalLocationOutputDTO, GlobalMapOutputDTO } from '#lib/dto';
-import { typeKey, isNearbyLocation, isNullOrUndefined } from '#lib/utils';
+import { injectMap, injectMapLazy } from '#lib/DI';
+import type { GlobalIntentionInputDTO, GlobalLocationFlatOutputDTO, GlobalLocationOutputDTO, GlobalMapOutputDTO } from '#lib/dto';
+import { isNearbyLocation, typeKey } from '#lib/utils';
 
-import type { Creature } from '#modules/StorageCreature/@types';
 import { CreatureRepositoryInjectionToken } from '#modules/StorageCreature';
-import type { GlobalLocation } from '#modules/StorageGlobalMap/@types';
+import type { Creature } from '#modules/StorageCreature/@types';
 import { GlobalMapRepositoryInjectionToken } from '#modules/StorageGlobalMap';
-import type { RequestContext } from '#modules/TransportHTTP';
+import type { GlobalLocation, GlobalLocationWithDependencies } from '#modules/StorageGlobalMap/@types';
 import { TransportSSEInjectionToken } from '#modules/TransportSSE';
+import { configInjectionToken } from '#modules/Config';
+import { loggerInjectionToken } from '#modules/Logger';
+import { fromCreatureToCreatureFlatOutputDTO } from '#modules/StorageCreature/serializers';
+import { UserRepositoryInjectionToken } from '#modules/StorageUser';
+import type { User } from '#modules/StorageUser/@types';
+import { SSETransportEventName } from '#modules/TransportSSE/@types';
 
+import { GlobalMapControllerContext } from './@types';
 import { GlobalMapControllerTypeSymbol } from './constants';
+import { InvalidIntentionError, LocationIsNotAdjacentError, LocationIsNotMovableError, NotEnoughMovePointsError } from './errors';
 
 
 const globalLocationTransformer = {
@@ -22,88 +29,141 @@ const globalLocationTransformer = {
     };
   },
 
-  toGlobalLocationOutputDTO(globalLocation: GlobalLocation, creatures: CreatureFlatOutputDTO[]): GlobalLocationOutputDTO {
+  toGlobalLocationOutputDTO(globalLocation: GlobalLocationWithDependencies): GlobalLocationOutputDTO {
     return {
       id: globalLocation.id,
       coordinates: [globalLocation.coordinateX, globalLocation.coordinateY],
       moveCost: globalLocation.moveCost,
       canMove: globalLocation.canMove,
-      creatures,
+      creatures: globalLocation.creatures.map(fromCreatureToCreatureFlatOutputDTO),
     };
   },
 };
 
-const sendGlobalMapUpdate = async (context: RequestContext): Promise<void> => {
-  const transportSSE = inject(TransportSSEInjectionToken);
-  const userSoket = transportSSE.clients[context.user.id];
+const sendGlobalMapUpdate = async (context: GlobalMapControllerContext, location: GlobalLocation): Promise<void> => {
 
-  if (isNullOrUndefined(userSoket)) return;
+  const { creatureStorage, globalMapStorage, userStorage } = context.providers;
 
-  const creatureStorage = inject(CreatureRepositoryInjectionToken);
+  const creatures = await creatureStorage.findCreatureByGlobalLocationId(location.id);
 
-  const player = await creatureStorage.getFlatCreatureById(context.user.playerCreatureId);
+  for (const creature of creatures) {
+    const user = await userStorage.getUserByCreatureId(creature.id);
+    if (user === null) continue;
+
+    const userNearestLocations = await globalMapStorage.getNearestLocationsForMap(
+      location.mapId,
+      [location.coordinateX, location.coordinateY],
+      2,
+    );
+
+    const globalMapOutput: GlobalMapOutputDTO = {
+      id: location.mapId,
+      locations: userNearestLocations.map(globalLocationTransformer.toGlobalLocationOutputDTO),
+    };
+
+    const result = context.providers.sseTransport.sendEventMessage(
+      user.id,
+      SSETransportEventName.globalMapUpdate,
+      JSON.stringify(globalMapOutput),
+    );
+
+    if (result instanceof Error) {
+      context.providers.logger.error(['GlobalMapController', 'sendGlobalMapUpdate'], result.message);
+    }
+  }
+};
+
+const sendGlobalMapUpdateToUser = async (context: GlobalMapControllerContext, user: User): Promise<void> => {
+
+  const { creatureStorage, globalMapStorage } = context.providers;
+
+  const player = await creatureStorage.getFlatCreatureById(user.playerCreatureId);
   if (player === null) return;
-
-  const globalMapStorage = inject(GlobalMapRepositoryInjectionToken);
 
   const playerLocation = await globalMapStorage.getLocationById(player.globalLocationId);
   if (playerLocation === null) return;
 
-  const globalMap = await globalMapStorage.getMapById(playerLocation.mapId);
-  if (globalMap === null) return;
-
   const userNearestLocations = await globalMapStorage.getNearestLocationsForMap(
-    globalMap.id,
+    playerLocation.mapId,
     [playerLocation.coordinateX, playerLocation.coordinateY],
     2,
   );
 
   const globalMapOutput: GlobalMapOutputDTO = {
-    id: globalMap.id,
-    size: [globalMap.sizeX, globalMap.sizeY],
-    locations: userNearestLocations.map(globalLocationTransformer.toGlobalLocationFlatOutputDTO),
+    id: playerLocation.mapId,
+    locations: userNearestLocations.map(globalLocationTransformer.toGlobalLocationOutputDTO),
   };
 
-  userSoket.dispatchEvent(new CustomEvent('globalMapUpdate', { detail: globalMapOutput }));
+  const result = context.lazyProviders.sseTransport().sendEventMessage(
+    user.id,
+    SSETransportEventName.globalMapUpdate,
+    JSON.stringify(globalMapOutput),
+  );
+
+  if (result instanceof Error) {
+    context.providers.logger.error(['GlobalMapController', 'sendGlobalMapUpdate'], result.message);
+  }
 };
 
 const moveCreatureToGlobalLocation = async (
+  context: GlobalMapControllerContext,
   creature: Creature,
   currentLocation: GlobalLocation,
   targetLocation: GlobalLocation,
-): Promise<void | Error> => {
-  if (!targetLocation.canMove) return new Error('Location is not movable');
-  if (targetLocation.moveCost > creature.currentStats.movePoints) return new Error('Not enough move points');
+): Promise<void | LocationIsNotMovableError | LocationIsNotAdjacentError | NotEnoughMovePointsError> => {
+  if (!targetLocation.canMove) return new LocationIsNotMovableError();
+  if (targetLocation.moveCost > creature.currentStats.movePoints) return new NotEnoughMovePointsError();
 
-  if (currentLocation !== null && !isNearbyLocation(currentLocation, targetLocation, 1)) {
-    return new Error('Not adjacent locations');
-  }
+  if (!isNearbyLocation(currentLocation, targetLocation, 1)) return new LocationIsNotAdjacentError();
 
   creature.globalLocationId = targetLocation.id;
   creature.currentStats.movePoints -= targetLocation.moveCost;
 
-  const creatureStorage = inject(CreatureRepositoryInjectionToken);
-  await creatureStorage.updateCreature(creature);
+  await context.providers.creatureStorage.updateCreature(creature);
 };
 
-const applyGlobalIntention = async (context: RequestContext, intentionData: GlobalIntentionInputDTO): Promise<void | Error> => {
-  const globalMapStorage = inject(GlobalMapRepositoryInjectionToken);
+const applyGlobalIntention = async (
+  context: GlobalMapControllerContext,
+  user: User,
+  intentionData: GlobalIntentionInputDTO,
+): Promise<void | InvalidIntentionError> => {
+  const globalMapStorage = context.providers.globalMapStorage;
 
-  if (context.user.playerCreatureId !== intentionData.sourceCreatureId) {
-    return Error('Invalid sourceCreature');
+  if (user.playerCreatureId !== intentionData.sourceCreatureId) {
+    context.providers.logger.error(
+      ['ControllerGlobalMap', 'applyGlobalIntention'],
+      `Player ${user.playerCreatureId} is not equal to intention source creature ${intentionData.sourceCreatureId}`,
+    );
+    return new InvalidIntentionError();
   }
 
-  const creatureStorage = inject(CreatureRepositoryInjectionToken);
+  const creatureStorage = context.providers.creatureStorage;
   const sourceCreature = await creatureStorage.getFlatCreatureById(intentionData.sourceCreatureId);
   if (sourceCreature === null) {
-    return Error('Invalid sourceCreature');
+    context.providers.logger.error(
+      ['ControllerGlobalMap', 'applyGlobalIntention'],
+      `Intention source creature with id ${intentionData.sourceCreatureId} not found!`,
+    );
+    return new InvalidIntentionError();
   }
 
   const [creatureSkill, skill] = await creatureStorage.findCreatureSkill(sourceCreature.id, intentionData.skillId);
-  if (skill === null) return Error('Invalid skill');
+  if (skill === null) {
+    context.providers.logger.error(
+      ['ControllerGlobalMap', 'applyGlobalIntention'],
+      `Intention skill with id ${intentionData.skillId} not found!`,
+    );
+    return new InvalidIntentionError();
+  }
 
   const currentLocation = await globalMapStorage.getLocationById(sourceCreature.globalLocationId);
-  if (currentLocation === null) return Error('Invalid source creature current location');
+  if (currentLocation === null) {
+    context.providers.logger.error(
+      ['ControllerGlobalMap', 'applyGlobalIntention'],
+      `Intention source creature ${ sourceCreature.id} current location not found!`,
+    );
+    return new InvalidIntentionError();
+  }
 
   let targetLocation: GlobalLocation | null = null;
   if (intentionData.targetGlobalLocationId !== null) {
@@ -119,8 +179,11 @@ const applyGlobalIntention = async (context: RequestContext, intentionData: Glob
     case 'GlobalMove': {
       if (targetLocation === currentLocation) return Error('Intention invalid');
       if (targetLocation === null) return Error('Intention invalid');
-      const result = await moveCreatureToGlobalLocation(sourceCreature, currentLocation, targetLocation);
+      const result = await moveCreatureToGlobalLocation(context, sourceCreature, currentLocation, targetLocation);
       if (result instanceof Error) return result;
+
+      await sendGlobalMapUpdate(context, currentLocation);
+      await sendGlobalMapUpdate(context, targetLocation);
       break;
     }
     default: {
@@ -131,14 +194,28 @@ const applyGlobalIntention = async (context: RequestContext, intentionData: Glob
   await globalMapStorage.createGlobalIntention(intentionData);
 };
 
-
-
 export const getGlobalMapController = () => {
+  const providers = injectMap({
+    config: configInjectionToken,
+    logger: loggerInjectionToken,
+    globalMapStorage: GlobalMapRepositoryInjectionToken,
+    creatureStorage: CreatureRepositoryInjectionToken,
+    userStorage: UserRepositoryInjectionToken,
+  });
+
+  const lazyProviders = injectMapLazy({
+    sseTransport: TransportSSEInjectionToken,
+  });
+
+  const context: GlobalMapControllerContext = {
+    providers, lazyProviders,
+  };
 
   return <const>{
     [typeKey]: GlobalMapControllerTypeSymbol,
-    sendGlobalMapUpdate: sendGlobalMapUpdate,
-    applyGlobalIntention: applyGlobalIntention,
+    sendGlobalMapUpdate: sendGlobalMapUpdate.bind(null, context),
+    sendGlobalMapUpdateToUser: sendGlobalMapUpdateToUser.bind(null, context),
+    applyGlobalIntention: applyGlobalIntention.bind(null, context),
   };
 };
 

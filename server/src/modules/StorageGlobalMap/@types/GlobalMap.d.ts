@@ -23,6 +23,14 @@ export interface GlobalLocation {
   updatedAt: Date;
 }
 
+export interface GlobalLocationDependencies {
+  creatures: Creature[];
+}
+
+export interface GlobalLocationWithDependencies extends GlobalLocation, GlobalLocationDependencies {
+
+}
+
 export interface GlobalIntention {
   id: UUIDv4;
   sourceCreatureId: UUIDv4;

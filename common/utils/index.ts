@@ -8,5 +8,6 @@ export * from './Vector';
 export * from './isNearbyCoordinates';
 
 export * from './transformers';
+export * from './safeRun';
 
 export const typeKey = Symbol.for('[[type]]');

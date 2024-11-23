@@ -4,7 +4,6 @@ import type { CreatureFlatOutputDTO } from './Creature.dto';
 
 export interface GlobalMapOutputDTO {
   id: UUIDv4;
-  size: Vector2;
   locations: GlobalLocationFlatOutputDTO[];
 }
 

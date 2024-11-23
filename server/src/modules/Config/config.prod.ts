@@ -5,6 +5,7 @@ import type { Config } from './@types';
 export const config: Config = <const>{
   isProdMode: stringToBoolean(process.env['IS_PROD_MODE']) ?? false,
   logLevel: stringToNumber(process.env['LOG_LEVEL']) ?? 2,
+  jwtSecret: stringToString(process.env['JWT_SECRET']) ?? throwError('Environment variable JWT_SECRET is required!'),
   scheduleRunDelay: stringToNumber(process.env['SCHEDULE_RUN_DELAY']) ?? 5 * 60 * 1000, // 5 minutes
   defaultTimezone: stringToString(process.env['DEFAULT_TIMEZONE']) ?? 'Europe/Moscow',
   defaultLocale: stringToString(process.env['DEFAULT_LOCALE']) ?? 'ru-RU',
@@ -16,5 +17,13 @@ export const config: Config = <const>{
     password: stringToString(process.env['POSTGRES_PASSWORD']) ?? throwError('Environment variable POSTGRES_PASSWORD is required!'),
     runMigrations: stringToBoolean(process.env['POSTGRES_RUN_MIGRATIONS']) ?? true,
     rollbackMigrations: stringToNumber(process.env['POSTGRES_ROLLBACK_MIGRATIONS']) ?? 0,
+  },
+  sseTransport: {
+    port: stringToNumber(process.env['SSE_TRANSPORT_PORT']) ?? 3000,
+    host: stringToString(process.env['SSE_TRANSPORT_HOST']) ?? 'http://localhost',
+  },
+  httpTransport: {
+    port: stringToNumber(process.env['HTTP_TRANSPORT_PORT']) ?? 3001,
+    host: stringToString(process.env['HTTP_TRANSPORT_HOST']) ?? 'http://localhost',
   },
 };

@@ -2,7 +2,6 @@
   "extends": "@tsconfig/node21/tsconfig.json",
   "include": [
     "env.d.ts",
-    "lib/**/*",
     "src/**/*"
   ],
   "exclude": [ ],
@@ -22,18 +21,6 @@
     "strictNullChecks": true,
     "skipLibCheck": false,
     "paths": {
-      "#modules": [
-        "./src/modules"
-      ],
-      "#modules/*": [
-        "./src/modules/*"
-      ],
-      "#lib": [
-        "./lib"
-      ],
-      "#lib/*": [
-        "./lib/*"
-      ]
     }
   }
 }

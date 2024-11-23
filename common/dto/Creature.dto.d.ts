@@ -31,7 +31,7 @@ export interface CreatureOutputDTO {
   maxStats: CreatureStats;
   currentStats: CreatureStats;
   skills: CreatureSkillOutputDTO[];
-  location: GlobalLocationOutputDTO;
+  globalLocation: GlobalLocationFlatOutputDTO;
 }
 
 export interface CreatureSkillFlatOutputDTO {

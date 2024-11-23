@@ -1,27 +1,42 @@
 import { injectMap } from '#lib/DI';
 import { type UUIDv4, isNullOrUndefined } from '#lib/utils';
 
-import { type RequestListener, createServer } from 'node:http';
+import { IncomingMessage, type RequestListener, Server, ServerResponse, createServer } from 'node:http';
 
 import { configInjectionToken } from '#modules/Config';
 import { AuthControllerInjectionToken } from '#modules/ControllerAuth';
 import { Logger, loggerInjectionToken } from '#modules/Logger';
 
-import { type TransportSSEContext, SSETransportEventName} from './@types';
-import { ErrorListenerNotFound } from './errors';
+import { type TransportSSEContext, SSETransportEventName } from './@types';
+import { ListenerNotFoundError } from './errors';
 import { requestListener } from './utils';
 
-
-
-const init = (host: string, port: number, listener: RequestListener, logger: Logger) => {
-  createServer(listener).listen(port);
+const init = (
+  host: string,
+  port: number,
+  listener: RequestListener,
+  logger: Logger,
+): Server<typeof IncomingMessage, typeof ServerResponse> => {
+  const server = createServer(listener).listen(port);
   logger.info(['SSETransport', 'init'], `Server running: ${host}\n\n`);
+  return server;
 };
 
 const subscribeUserToEvent = (context: TransportSSEContext, userId: UUIDv4, event: SSETransportEventName): void | Error => {
   if (userId in context.listeners) {
     context.listeners[userId].listenEvents.add(event);
-  } else return new ErrorListenerNotFound(userId);
+    return;
+  }
+
+  return new ListenerNotFoundError(userId);
+};
+
+const checkUserIsSubscribedToEvent = (context: TransportSSEContext, userId: UUIDv4, event: SSETransportEventName): boolean => {
+  if (userId in context.listeners) {
+    return context.listeners[userId].listenEvents.has(event);
+  }
+
+  return false;
 };
 
 const sendEventMessage = (
@@ -29,9 +44,9 @@ const sendEventMessage = (
   userId: UUIDv4,
   eventName: SSETransportEventName,
   data: string,
-): void | ErrorListenerNotFound => {
+): void | ListenerNotFoundError => {
   const listener = context.listeners[userId];
-  if (isNullOrUndefined(listener)) return new ErrorListenerNotFound(userId);
+  if (isNullOrUndefined(listener)) return new ListenerNotFoundError(userId);
   const channel = listener.channel;
 
   if (!listener.listenEvents.has(eventName)) return;
@@ -47,12 +62,12 @@ export const build = () => {
   });
 
   const context: TransportSSEContext = {
-    host: `http://localhost:${providers.config.sseTransport.port}/`,
+    host: `${providers.config.sseTransport.host}:${providers.config.sseTransport.port}/`,
     providers,
     listeners: {},
   };
 
-  init(
+  const server = init(
     context.host,
     providers.config.sseTransport.port,
     requestListener.bind(null, context),
@@ -61,6 +76,9 @@ export const build = () => {
 
   return {
     subscribeUserToEvent: subscribeUserToEvent.bind(null, context),
+    checkUserIsSubscribedToEvent: checkUserIsSubscribedToEvent.bind(null, context),
     sendEventMessage: sendEventMessage.bind(null, context),
   };
 };
+
+export type TransportSSE = ReturnType<typeof build>;

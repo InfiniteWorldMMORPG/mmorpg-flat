@@ -1,4 +1,5 @@
 import type { UUIDv4 } from '#lib/utils';
+import { GlobalLocation } from '#modules/StorageGlobalMap/@types';
 
 export interface Skill {
   id: UUIDv4;
@@ -55,6 +56,14 @@ export interface Creature {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface CreatureDependencies {
+  skills: CreatureSkill[];
+  creatureTemplates: CreatureTemplate[];
+  globalLocation: GlobalLocation;
+}
+
+export interface CreatureWithDependencies extends Creature, CreatureDependencies {}
 
 export interface CreatureSkill {
   id: UUIDv4;

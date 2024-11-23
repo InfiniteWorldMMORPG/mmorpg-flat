@@ -11,3 +11,10 @@ export interface UserOutputDTO {
   id: UUIDv4;
   playerCreature: PlayerCreatureOutputDTO;
 }
+
+export interface UserInputDTO {
+  nickname: string;
+  login: string;
+  email: string;
+  password: string;
+}

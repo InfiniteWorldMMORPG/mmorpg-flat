@@ -8,7 +8,7 @@ export const buildUser = (): User => {
     nickname: 'testuser',
     login: 'testuser',
     email: 'testuser@goo.gl',
-    password: 'password',
+    password: '$2b$10$vRPBMWrvo.Qdhqlg1XjqWuGZFJcIVkx4fmBfGWTrFWvsf6TPBVeQ6',
     playerCreatureId: 'bbc932e0-e3fa-42ca-9446-1528c8f47e8e',
     createdAt: new Date(),
     updatedAt: new Date(),

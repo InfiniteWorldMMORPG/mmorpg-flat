@@ -2,7 +2,10 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import type { UUIDv4 } from '#lib/utils';
 
-import type { ListenerStorage, TransportSSEContext } from './@types';
+import { SSETransportEventName, type ListenerStorage, type TransportSSEContext } from './@types';
+import { inject } from '#lib/DI';
+import { CreatureControllerInjectionToken } from '#modules/ControllerCreature';
+import { GlobalMapControllerInjectionToken } from '#modules/ControllerGlobalMap';
 
 export const sendHandshake = (res: ServerResponse): void => {
   res.writeHead(200, {
@@ -15,17 +18,19 @@ export const sendHandshake = (res: ServerResponse): void => {
 
 export const sendNotAuthorized = (res: ServerResponse): void => {
   res.writeHead(401);
+  res.write('Not authorized\n');
   res.end();
 };
 
 export const sendNotFound = (res: ServerResponse): void => {
   res.writeHead(404);
+  res.write('Not found\n');
   res.end();
 };
 
 export const listen = (listeners: ListenerStorage, userId: UUIDv4, channel: ServerResponse): void => {
   listeners[userId] = {
-    listenEvents: new Set(),
+    listenEvents: new Set([SSETransportEventName.globalMapUpdate, SSETransportEventName.playerUpdate]),
     channel,
   };
   channel.on('close', () => {
@@ -47,10 +52,10 @@ export const requestListener = async (context: TransportSSEContext, req: Incomin
   const url = new URL(req.url ?? '', context.host);
   const pathname = url.pathname;
 
-  const authToken = req.headers.authorization?.replace('Brearer ', '') ?? '';
-  const user = await context.providers.authController.whoAmI(authToken);
+  const authToken = req.headers.authorization?.replace('Bearer ', '') ?? '';
+  const user = await context.providers.authController.getUserByToken(authToken);
 
-  if (user === null) {
+  if (user === null || user instanceof Error) {
     sendNotAuthorized(res);
     return;
   }
@@ -64,6 +69,10 @@ export const requestListener = async (context: TransportSSEContext, req: Incomin
     case '/connect': {
       sendHandshake(res);
       listen(context.listeners, user.id, res);
+      const creatureController = inject(CreatureControllerInjectionToken);
+      creatureController.sendPlayerUpdate(user);
+      const globalMapController = inject(GlobalMapControllerInjectionToken);
+      globalMapController.sendGlobalMapUpdateToUser(user);
       break;
     }
     default: {

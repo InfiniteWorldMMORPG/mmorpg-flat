@@ -1,6 +1,7 @@
 export interface Config {
   readonly isProdMode: boolean;
   readonly logLevel: number;
+  readonly jwtSecret: string;
   readonly scheduleRunDelay: number;
   readonly defaultTimezone: string;
   readonly defaultLocale: string;
@@ -12,5 +13,13 @@ export interface Config {
     password: string;
     runMigrations: boolean;
     rollbackMigrations: number;
+  };
+  readonly sseTransport: {
+    port: number;
+    host: string;
+  };
+  readonly httpTransport: {
+    port: number;
+    host: string;
   };
 }

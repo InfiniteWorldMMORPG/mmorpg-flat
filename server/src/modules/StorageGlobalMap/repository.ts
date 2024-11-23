@@ -5,7 +5,7 @@ import type { User } from '#modules/StorageUser/@types';
 import { inject } from '#lib/DI';
 import { createUUIDv4, typeKey, type UUIDv4, type Vector2 } from '#lib/utils';
 
-import type { GlobalIntention, GlobalLocation, GlobalMap } from './@types';
+import type { GlobalIntention, GlobalLocation, GlobalLocationWithDependencies, GlobalMap } from './@types';
 import { GlobalMapRepositoryTypeSymbol } from './constants';
 import { locations, map } from './fixtureBuilder';
 
@@ -26,13 +26,24 @@ const getLocationById = async (id: UUIDv4): Promise<GlobalLocation | null> => {
   return globalLocationStorage.get(id) ?? null;
 };
 
-const getNearestLocationsForMap = async (mapId: UUIDv4, coordinates: Vector2, distance: number = 2): Promise<GlobalLocation[]> => {
-  const result: GlobalLocation[] = [];
+const getNearestLocationsForMap = async (
+  mapId: UUIDv4,
+  coordinates: Vector2,
+  distance: number = 2,
+): Promise<GlobalLocationWithDependencies[]> => {
+  const result: GlobalLocationWithDependencies[] = [];
+  const creatureStorage = inject(CreatureRepositoryInjectionToken);
   for (const [, location] of globalLocationStorage) {
     if (location.mapId === mapId
       && Math.abs(location.coordinateX - coordinates[0]) <= distance
       && Math.abs(location.coordinateY - coordinates[1]) <= distance
-    ) result.push(location);
+    ) {
+      const creatures = await creatureStorage.findCreatureByGlobalLocationId(location.id);
+      result.push({
+        ...location,
+        creatures,
+      });
+    }
   }
   return result;
 };
